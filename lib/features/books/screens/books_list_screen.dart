@@ -1,0 +1,94 @@
+import 'package:flutter/material.dart';
+import '../models/book.dart';
+import '../widgets/book_tile.dart';
+import 'book_form_screen.dart';
+
+class BooksListScreen extends StatelessWidget {
+  final List<Book> books;
+  final Function(Book) onAddBook;
+  final Function(String) onDeleteBook;
+  final Function(String, bool) onToggleRead;
+  final Function(String, int) onRateBook;
+
+  const BooksListScreen({
+    super.key,
+    required this.books,
+    required this.onAddBook,
+    required this.onDeleteBook,
+    required this.onToggleRead,
+    required this.onRateBook,
+  });
+
+  void _showAddBookDialog(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BookFormScreen(
+          onSave: (book) {
+            onAddBook(book);
+            Navigator.pop(context);
+          },
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Библиотека книг'),
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+      ),
+      body: books.isEmpty
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.menu_book_outlined,
+                    size: 80,
+                    color: Colors.grey[400],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Библиотека пуста',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Добавьте первую книгу',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[500],
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : ListView.builder(
+              itemCount: books.length,
+              padding: const EdgeInsets.all(8),
+              itemBuilder: (context, index) {
+                final book = books[index];
+                return BookTile(
+                  key: ValueKey(book.id),
+                  book: book,
+                  onDelete: () => onDeleteBook(book.id),
+                  onToggleRead: (isRead) => onToggleRead(book.id, isRead),
+                  onRate: (rating) => onRateBook(book.id, rating),
+                );
+              },
+            ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _showAddBookDialog(context),
+        tooltip: 'Добавить книгу',
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+}
+
