@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/book.dart';
+import 'book_form_screen.dart';
 
 class BookDetailScreen extends StatelessWidget {
   final Book book;
   final VoidCallback onDelete;
   final Function(bool) onToggleRead;
   final Function(int) onRate;
+  final Function(Book) onUpdate;
 
   const BookDetailScreen({
     super.key,
@@ -14,6 +16,7 @@ class BookDetailScreen extends StatelessWidget {
     required this.onDelete,
     required this.onToggleRead,
     required this.onRate,
+    required this.onUpdate,
   });
 
   void _showRatingDialog(BuildContext context) {
@@ -78,6 +81,21 @@ class BookDetailScreen extends StatelessWidget {
     );
   }
 
+  void _navigateToEditScreen(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BookFormScreen(
+          book: book,
+          onSave: (updatedBook) {
+            onUpdate(updatedBook);
+            Navigator.pop(context);
+          },
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final dateFormat = DateFormat('dd.MM.yyyy');
@@ -87,6 +105,11 @@ class BookDetailScreen extends StatelessWidget {
         title: const Text('Детали книги'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: () => _navigateToEditScreen(context),
+            tooltip: 'Редактировать',
+          ),
           IconButton(
             icon: const Icon(Icons.delete),
             onPressed: () => _showDeleteConfirmation(context),
@@ -249,4 +272,3 @@ class BookDetailScreen extends StatelessWidget {
     );
   }
 }
-

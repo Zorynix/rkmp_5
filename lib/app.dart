@@ -12,13 +12,14 @@ class MyApp extends StatelessWidget {
       theme: AppTheme.lightTheme,
       debugShowCheckedModeBanner: false,
       home: BooksContainer(
-        builder: (context, books, onAddBook, onDeleteBook, onToggleRead, onRateBook) {
+        builder: (context, books, onAddBook, onDeleteBook, onToggleRead, onRateBook, onUpdateBook) {
           return HomeScreen(
             books: books,
             onAddBook: onAddBook,
             onDeleteBook: onDeleteBook,
             onToggleRead: onToggleRead,
             onRateBook: onRateBook,
+            onUpdateBook: onUpdateBook,
           );
         },
       ),

@@ -9,6 +9,7 @@ class BooksContainer extends StatefulWidget {
     Function(String) onDeleteBook,
     Function(String, bool) onToggleRead,
     Function(String, int) onRateBook,
+    Function(Book) onUpdateBook,
   ) builder;
 
   const BooksContainer({
@@ -26,6 +27,15 @@ class _BooksContainerState extends State<BooksContainer> {
   void _addBook(Book book) {
     setState(() {
       _books.add(book);
+    });
+  }
+
+  void _updateBook(Book updatedBook) {
+    setState(() {
+      final index = _books.indexWhere((book) => book.id == updatedBook.id);
+      if (index != -1) {
+        _books[index] = updatedBook;
+      }
     });
   }
 
@@ -63,6 +73,7 @@ class _BooksContainerState extends State<BooksContainer> {
       _deleteBook,
       _toggleRead,
       _rateBook,
+      _updateBook,
     );
   }
 }

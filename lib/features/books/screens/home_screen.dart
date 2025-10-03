@@ -13,6 +13,7 @@ class HomeScreen extends StatefulWidget {
   final Function(String) onDeleteBook;
   final Function(String, bool) onToggleRead;
   final Function(String, int) onRateBook;
+  final Function(Book) onUpdateBook;
 
   const HomeScreen({
     super.key,
@@ -21,6 +22,7 @@ class HomeScreen extends StatefulWidget {
     required this.onDeleteBook,
     required this.onToggleRead,
     required this.onRateBook,
+    required this.onUpdateBook,
   });
 
   @override
@@ -60,6 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
           onDeleteBook: widget.onDeleteBook,
           onToggleRead: widget.onToggleRead,
           onRateBook: widget.onRateBook,
+          onUpdateBook: widget.onUpdateBook,
         );
       case 2:
         return ReadBooksScreen(
@@ -67,6 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
           onDeleteBook: widget.onDeleteBook,
           onToggleRead: widget.onToggleRead,
           onRateBook: widget.onRateBook,
+          onUpdateBook: widget.onUpdateBook,
         );
       case 3:
         return WantToReadScreen(
@@ -74,6 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
           onDeleteBook: widget.onDeleteBook,
           onToggleRead: widget.onToggleRead,
           onRateBook: widget.onRateBook,
+          onUpdateBook: widget.onUpdateBook,
         );
       default:
         return _buildHomeTab();
@@ -189,6 +194,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   onDelete: () => widget.onDeleteBook(book.id),
                   onToggleRead: (isRead) => widget.onToggleRead(book.id, isRead),
                   onRate: (rating) => widget.onRateBook(book.id, rating),
+                  onUpdate: widget.onUpdateBook,
                 );
               },
             ),
@@ -239,4 +245,3 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
-

@@ -4,10 +4,12 @@ import '../../../shared/constants.dart';
 
 class BookFormScreen extends StatefulWidget {
   final Function(Book) onSave;
+  final Book? book;
 
   const BookFormScreen({
     super.key,
     required this.onSave,
+    this.book,
   });
 
   @override
@@ -23,6 +25,18 @@ class _BookFormScreenState extends State<BookFormScreen> {
   String _selectedGenre = AppConstants.genres.first;
 
   @override
+  void initState() {
+    super.initState();
+    if (widget.book != null) {
+      _titleController.text = widget.book!.title;
+      _authorController.text = widget.book!.author;
+      _selectedGenre = widget.book!.genre;
+      _descriptionController.text = widget.book!.description ?? '';
+      _pagesController.text = widget.book!.pages?.toString() ?? '';
+    }
+  }
+
+  @override
   void dispose() {
     _titleController.dispose();
     _authorController.dispose();
@@ -33,7 +47,17 @@ class _BookFormScreenState extends State<BookFormScreen> {
 
   void _saveBook() {
     if (_formKey.currentState!.validate()) {
-      final book = Book(
+      final book = widget.book?.copyWith(
+        title: _titleController.text.trim(),
+        author: _authorController.text.trim(),
+        genre: _selectedGenre,
+        description: _descriptionController.text.trim().isEmpty
+            ? null
+            : _descriptionController.text.trim(),
+        pages: _pagesController.text.trim().isEmpty
+            ? null
+            : int.tryParse(_pagesController.text.trim()),
+      ) ?? Book(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         title: _titleController.text.trim(),
         author: _authorController.text.trim(),
@@ -51,9 +75,11 @@ class _BookFormScreenState extends State<BookFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isEditing = widget.book != null;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Добавить книгу'),
+        title: Text(isEditing ? 'Редактировать книгу' : 'Добавить книгу'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: SingleChildScrollView(
@@ -99,7 +125,6 @@ class _BookFormScreenState extends State<BookFormScreen> {
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<String>(
-                value: _selectedGenre,
                 decoration: const InputDecoration(
                   labelText: 'Жанр *',
                   border: OutlineInputBorder(),
@@ -116,6 +141,7 @@ class _BookFormScreenState extends State<BookFormScreen> {
                     _selectedGenre = value!;
                   });
                 },
+                initialValue: _selectedGenre,
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -151,8 +177,8 @@ class _BookFormScreenState extends State<BookFormScreen> {
               const SizedBox(height: 24),
               ElevatedButton.icon(
                 onPressed: _saveBook,
-                icon: const Icon(Icons.save),
-                label: const Text('Сохранить'),
+                icon: Icon(isEditing ? Icons.save : Icons.add),
+                label: Text(isEditing ? 'Сохранить изменения' : 'Добавить книгу'),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.all(16),
                 ),

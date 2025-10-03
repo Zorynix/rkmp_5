@@ -7,6 +7,7 @@ class BookTile extends StatelessWidget {
   final VoidCallback onDelete;
   final Function(bool) onToggleRead;
   final Function(int) onRate;
+  final Function(Book) onUpdate;
 
   const BookTile({
     super.key,
@@ -14,6 +15,7 @@ class BookTile extends StatelessWidget {
     required this.onDelete,
     required this.onToggleRead,
     required this.onRate,
+    required this.onUpdate,
   });
 
   void _showRatingDialog(BuildContext context) {
@@ -94,6 +96,7 @@ class BookTile extends StatelessWidget {
           onDelete: onDelete,
           onToggleRead: onToggleRead,
           onRate: onRate,
+          onUpdate: onUpdate,
         ),
       ),
     );
@@ -111,14 +114,55 @@ class BookTile extends StatelessWidget {
           padding: const EdgeInsets.all(12),
           child: Row(
             children: [
-              CircleAvatar(
-                radius: 28,
-                backgroundColor: book.isRead ? Colors.green : Colors.orange,
-                child: Icon(
-                  book.isRead ? Icons.check : Icons.schedule,
-                  color: Colors.white,
-                  size: 28,
-                ),
+              Stack(
+                children: [
+                  Container(
+                    width: 60,
+                    height: 85,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          book.isRead ? Colors.green.shade400 : Colors.orange.shade400,
+                          book.isRead ? Colors.green.shade700 : Colors.orange.shade700,
+                        ],
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.2),
+                          blurRadius: 4,
+                          offset: const Offset(2, 2),
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: Icon(
+                        Icons.menu_book,
+                        color: Colors.white.withValues(alpha: 0.7),
+                        size: 32,
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    top: 4,
+                    right: 4,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: book.isRead ? Colors.green : Colors.orange,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 2),
+                      ),
+                      child: Icon(
+                        book.isRead ? Icons.check : Icons.schedule,
+                        color: Colors.white,
+                        size: 14,
+                      ),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(width: 16),
               Expanded(

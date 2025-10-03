@@ -8,6 +8,7 @@ class AllBooksScreen extends StatefulWidget {
   final Function(String) onDeleteBook;
   final Function(String, bool) onToggleRead;
   final Function(String, int) onRateBook;
+  final Function(Book) onUpdateBook;
 
   const AllBooksScreen({
     super.key,
@@ -15,6 +16,7 @@ class AllBooksScreen extends StatefulWidget {
     required this.onDeleteBook,
     required this.onToggleRead,
     required this.onRateBook,
+    required this.onUpdateBook,
   });
 
   @override
@@ -149,6 +151,7 @@ class _AllBooksScreenState extends State<AllBooksScreen> {
                       onDelete: () => widget.onDeleteBook(book.id),
                       onToggleRead: (isRead) => widget.onToggleRead(book.id, isRead),
                       onRate: (rating) => widget.onRateBook(book.id, rating),
+                      onUpdate: widget.onUpdateBook,
                     );
                   },
                 ),
@@ -157,4 +160,3 @@ class _AllBooksScreenState extends State<AllBooksScreen> {
     );
   }
 }
-
