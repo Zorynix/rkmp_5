@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'shared/app_theme.dart';
-import 'features/books/books_feature.dart';
+import 'package:prac5/shared/app_theme.dart';
+import 'package:prac5/features/books/books_feature.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

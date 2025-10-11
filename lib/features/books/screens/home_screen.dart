@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import '../models/book.dart';
-import '../widgets/statistics_card.dart';
-import '../widgets/book_tile.dart';
-import 'book_form_screen.dart';
-import 'all_books_screen.dart';
-import 'read_books_screen.dart';
-import 'want_to_read_screen.dart';
+import 'package:prac5/features/books/models/book.dart';
+import 'package:prac5/features/books/widgets/statistics_card.dart';
+import 'package:prac5/features/books/widgets/book_tile.dart';
+import 'package:prac5/features/books/screens/book_form_screen.dart';
+import 'package:prac5/features/books/screens/all_books_screen.dart';
+import 'package:prac5/features/books/screens/read_books_screen.dart';
+import 'package:prac5/features/books/screens/want_to_read_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final List<Book> books;

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../models/book.dart';
-import '../widgets/book_tile.dart';
-import '../../../shared/widgets/empty_state.dart';
+import 'package:prac5/features/books/models/book.dart';
+import 'package:prac5/features/books/widgets/book_tile.dart';
+import 'package:prac5/shared/widgets/empty_state.dart';
 
 class AllBooksScreen extends StatefulWidget {
   final List<Book> books;

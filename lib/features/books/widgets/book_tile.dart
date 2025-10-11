@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../models/book.dart';
-import '../screens/book_detail_screen.dart';
+import 'package:prac5/features/books/models/book.dart';
+import 'package:prac5/features/books/screens/book_detail_screen.dart';
 
 class BookTile extends StatelessWidget {
   final Book book;

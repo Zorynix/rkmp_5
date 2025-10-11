@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../models/book.dart';
-import '../../../shared/constants.dart';
+import 'package:prac5/features/books/models/book.dart';
+import 'package:prac5/shared/constants.dart';
 
 class BookFormScreen extends StatefulWidget {
   final Function(Book) onSave;

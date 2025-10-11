@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/book.dart';
+import 'package:prac5/features/books/models/book.dart';
 
 class BooksContainer extends StatefulWidget {
   final Widget Function(
