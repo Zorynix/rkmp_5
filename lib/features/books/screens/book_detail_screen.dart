@@ -4,7 +4,7 @@ import 'package:prac5/features/books/models/book.dart';
 import 'package:prac5/features/books/screens/book_form_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
-class BookDetailScreen extends StatelessWidget {
+class BookDetailScreen extends StatefulWidget {
   final Book book;
   final VoidCallback onDelete;
   final Function(bool) onToggleRead;
@@ -20,6 +20,19 @@ class BookDetailScreen extends StatelessWidget {
     required this.onUpdate,
   });
 
+  @override
+  State<BookDetailScreen> createState() => _BookDetailScreenState();
+}
+
+class _BookDetailScreenState extends State<BookDetailScreen> {
+  late Book _currentBook;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentBook = widget.book;
+  }
+
   void _showRatingDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -34,12 +47,15 @@ class BookDetailScreen extends StatelessWidget {
                 final rating = index + 1;
                 return IconButton(
                   icon: Icon(
-                    rating <= (book.rating ?? 0) ? Icons.star : Icons.star_border,
+                    rating <= (_currentBook.rating ?? 0) ? Icons.star : Icons.star_border,
                     color: Colors.amber,
                     size: 36,
                   ),
                   onPressed: () {
-                    onRate(rating);
+                    widget.onRate(rating);
+                    setState(() {
+                      _currentBook = _currentBook.copyWith(rating: rating);
+                    });
                     Navigator.pop(context);
                   },
                 );
@@ -62,7 +78,7 @@ class BookDetailScreen extends StatelessWidget {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Удалить книгу?'),
-        content: Text('Вы уверены, что хотите удалить "${book.title}"?'),
+        content: Text('Вы уверены, что хотите удалить "${_currentBook.title}"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -72,7 +88,7 @@ class BookDetailScreen extends StatelessWidget {
             onPressed: () {
               Navigator.pop(context);
               Navigator.pop(context);
-              onDelete();
+              widget.onDelete();
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Удалить'),
@@ -87,14 +103,28 @@ class BookDetailScreen extends StatelessWidget {
       context,
       MaterialPageRoute(
         builder: (context) => BookFormScreen(
-          book: book,
+          book: _currentBook,
           onSave: (updatedBook) {
-            onUpdate(updatedBook);
+            widget.onUpdate(updatedBook);
+            setState(() {
+              _currentBook = updatedBook;
+            });
             Navigator.pop(context);
           },
         ),
       ),
     );
+  }
+
+  void _toggleReadStatus() {
+    final newIsRead = !_currentBook.isRead;
+    widget.onToggleRead(newIsRead);
+    setState(() {
+      _currentBook = _currentBook.copyWith(
+        isRead: newIsRead,
+        dateFinished: newIsRead ? DateTime.now() : null,
+      );
+    });
   }
 
   @override
@@ -122,13 +152,13 @@ class BookDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (book.imageUrl != null)
+            if (_currentBook.imageUrl != null)
               Container(
                 width: double.infinity,
                 height: 300,
                 color: Colors.grey[200],
                 child: CachedNetworkImage(
-                  imageUrl: book.imageUrl!,
+                  imageUrl: _currentBook.imageUrl!,
                   fit: BoxFit.cover,
                   placeholder: (context, url) => Container(
                     color: Colors.grey[300],
@@ -140,8 +170,8 @@ class BookDetailScreen extends StatelessWidget {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          book.isRead ? Colors.green : Colors.orange,
-                          book.isRead ? Colors.green.shade300 : Colors.orange.shade300,
+                          _currentBook.isRead ? Colors.green : Colors.orange,
+                          _currentBook.isRead ? Colors.green.shade300 : Colors.orange.shade300,
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
@@ -163,8 +193,8 @@ class BookDetailScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    book.isRead ? Colors.green : Colors.orange,
-                    book.isRead ? Colors.green.shade300 : Colors.orange.shade300,
+                    _currentBook.isRead ? Colors.green : Colors.orange,
+                    _currentBook.isRead ? Colors.green.shade300 : Colors.orange.shade300,
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
@@ -173,13 +203,13 @@ class BookDetailScreen extends StatelessWidget {
               child: Column(
                 children: [
                   Icon(
-                    book.isRead ? Icons.check_circle : Icons.schedule,
+                    _currentBook.isRead ? Icons.check_circle : Icons.schedule,
                     size: 64,
                     color: Colors.white,
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    book.title,
+                    _currentBook.title,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       fontSize: 24,
@@ -189,7 +219,7 @@ class BookDetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    book.author,
+                    _currentBook.author,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       fontSize: 18,
@@ -197,13 +227,13 @@ class BookDetailScreen extends StatelessWidget {
                       fontStyle: FontStyle.italic,
                     ),
                   ),
-                  if (book.rating != null) ...[
+                  if (_currentBook.rating != null) ...[
                     const SizedBox(height: 12),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: List.generate(5, (index) {
                         return Icon(
-                          index < book.rating! ? Icons.star : Icons.star_border,
+                          index < _currentBook.rating! ? Icons.star : Icons.star_border,
                           color: Colors.white,
                           size: 24,
                         );
@@ -218,21 +248,21 @@ class BookDetailScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildInfoRow(Icons.category, 'Жанр', book.genre),
-                  if (book.pages != null)
-                    _buildInfoRow(Icons.menu_book, 'Страниц', '${book.pages}'),
+                  _buildInfoRow(Icons.category, 'Жанр', _currentBook.genre),
+                  if (_currentBook.pages != null)
+                    _buildInfoRow(Icons.menu_book, 'Страниц', '${_currentBook.pages}'),
                   _buildInfoRow(
                     Icons.calendar_today,
                     'Добавлено',
-                    dateFormat.format(book.dateAdded),
+                    dateFormat.format(_currentBook.dateAdded),
                   ),
-                  if (book.dateFinished != null)
+                  if (_currentBook.dateFinished != null)
                     _buildInfoRow(
                       Icons.check,
                       'Прочитано',
-                      dateFormat.format(book.dateFinished!),
+                      dateFormat.format(_currentBook.dateFinished!),
                     ),
-                  if (book.description != null && book.description!.isNotEmpty) ...[
+                  if (_currentBook.description != null && _currentBook.description!.isNotEmpty) ...[
                     const SizedBox(height: 24),
                     const Text(
                       'Описание',
@@ -243,7 +273,7 @@ class BookDetailScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      book.description!,
+                      _currentBook.description!,
                       style: const TextStyle(fontSize: 16),
                     ),
                   ],
@@ -252,10 +282,10 @@ class BookDetailScreen extends StatelessWidget {
                     children: [
                       Expanded(
                         child: ElevatedButton.icon(
-                          onPressed: () => onToggleRead(!book.isRead),
-                          icon: Icon(book.isRead ? Icons.undo : Icons.check),
+                          onPressed: _toggleReadStatus,
+                          icon: Icon(_currentBook.isRead ? Icons.undo : Icons.check),
                           label: Text(
-                            book.isRead ? 'Вернуть в список' : 'Отметить прочитанной',
+                            _currentBook.isRead ? 'Вернуть в список' : 'Отметить прочитанной',
                           ),
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.all(16),

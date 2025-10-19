@@ -1,6 +1,7 @@
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
+import 'package:prac5/services/logger_service.dart';
 
 class ImageService {
   static final ImageService _instance = ImageService._internal();
@@ -92,18 +93,18 @@ class ImageService {
     for (final url in _availableImages) {
       try {
         await _cacheManager.downloadFile(url);
-        print('Предзагружено изображение книжки: $url');
+        LoggerService.debug('Предзагружено изображение книжки: $url');
       } catch (e) {
-        print('Ошибка предзагрузки $url: $e');
+        LoggerService.error('Ошибка предзагрузки $url', e);
       }
     }
 
     for (final url in _availableAvatars) {
       try {
         await _cacheManager.downloadFile(url);
-        print('Предзагружена аватарка: $url');
+        LoggerService.debug('Предзагружена аватарка: $url');
       } catch (e) {
-        print('Ошибка предзагрузки аватарки $url: $e');
+        LoggerService.error('Ошибка предзагрузки аватарки $url', e);
       }
     }
   }
@@ -113,7 +114,7 @@ class ImageService {
 
     if (_availableImages.isEmpty) {
       await _generateImagePool();
-      _preloadImages(_availableImages).catchError((e) => print('Не удалось предзагрузить новые изображения: $e'));
+      _preloadImages(_availableImages).catchError((e) => LoggerService.warning('Не удалось предзагрузить новые изображения: $e'));
     }
 
     if (_availableImages.isEmpty) {
@@ -132,7 +133,7 @@ class ImageService {
 
     if (_availableAvatars.isEmpty) {
       await _generateAvatarPool();
-      _preloadImages(_availableAvatars).catchError((e) => print('Не удалось предзагрузить новые аватарки: $e'));
+      _preloadImages(_availableAvatars).catchError((e) => LoggerService.warning('Не удалось предзагрузить новые аватарки: $e'));
     }
 
     if (_availableAvatars.isEmpty) {
@@ -151,7 +152,7 @@ class ImageService {
       try {
         await _cacheManager.downloadFile(url);
       } catch (e) {
-        print('Ошибка предзагрузки $url: $e');
+        LoggerService.error('Ошибка предзагрузки $url', e);
       }
     }
   }
@@ -200,7 +201,7 @@ class ImageService {
     try {
       await _cacheManager.removeFile(url);
     } catch (e) {
-      print('Ошибка при удалении изображения из кэша: $e');
+      LoggerService.error('Ошибка при удалении изображения из кэша', e);
     }
   }
 
@@ -208,7 +209,7 @@ class ImageService {
     try {
       await _cacheManager.downloadFile(url);
     } catch (e) {
-      print('Ошибка при предзагрузке изображения: $e');
+      LoggerService.error('Ошибка при предзагрузке изображения', e);
     }
   }
 
@@ -216,7 +217,7 @@ class ImageService {
     try {
       await _cacheManager.emptyCache();
     } catch (e) {
-      print('Ошибка при очистке кэша: $e');
+      LoggerService.error('Ошибка при очистке кэша', e);
     }
   }
 

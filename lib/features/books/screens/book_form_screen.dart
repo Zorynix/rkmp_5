@@ -95,7 +95,9 @@ class _BookFormScreenState extends State<BookFormScreen> {
                 decoration: const InputDecoration(
                   labelText: 'Название книги *',
                   hintText: 'Введите название',
-                  border: OutlineInputBorder(),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(16)),
+                  ),
                   prefixIcon: Icon(Icons.book),
                 ),
                 validator: (value) {
@@ -112,7 +114,9 @@ class _BookFormScreenState extends State<BookFormScreen> {
                 decoration: const InputDecoration(
                   labelText: 'Автор *',
                   hintText: 'Введите имя автора',
-                  border: OutlineInputBorder(),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(16)),
+                  ),
                   prefixIcon: Icon(Icons.person),
                 ),
                 validator: (value) {
@@ -127,7 +131,9 @@ class _BookFormScreenState extends State<BookFormScreen> {
               DropdownButtonFormField<String>(
                 decoration: const InputDecoration(
                   labelText: 'Жанр *',
-                  border: OutlineInputBorder(),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(16)),
+                  ),
                   prefixIcon: Icon(Icons.category),
                 ),
                 items: AppConstants.genres.map((genre) {
@@ -149,7 +155,9 @@ class _BookFormScreenState extends State<BookFormScreen> {
                 decoration: const InputDecoration(
                   labelText: 'Количество страниц',
                   hintText: 'Введите количество страниц',
-                  border: OutlineInputBorder(),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(16)),
+                  ),
                   prefixIcon: Icon(Icons.numbers),
                 ),
                 keyboardType: TextInputType.number,
@@ -168,7 +176,9 @@ class _BookFormScreenState extends State<BookFormScreen> {
                 decoration: const InputDecoration(
                   labelText: 'Описание',
                   hintText: 'Краткое описание книги',
-                  border: OutlineInputBorder(),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(16)),
+                  ),
                   prefixIcon: Icon(Icons.description),
                 ),
                 maxLines: 4,

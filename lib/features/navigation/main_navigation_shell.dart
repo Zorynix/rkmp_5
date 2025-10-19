@@ -4,6 +4,7 @@ import 'package:prac5/features/books/screens/home_screen.dart';
 import 'package:prac5/features/books/screens/all_books_screen.dart';
 import 'package:prac5/features/books/screens/read_books_screen.dart';
 import 'package:prac5/features/books/screens/want_to_read_screen.dart';
+import 'package:prac5/services/theme_service.dart';
 
 class MainNavigationShell extends StatefulWidget {
   final List<Book> books;
@@ -12,6 +13,7 @@ class MainNavigationShell extends StatefulWidget {
   final Function(String, bool) onToggleRead;
   final Function(String, int) onRateBook;
   final Function(Book) onUpdateBook;
+  final ThemeService themeService;
 
   const MainNavigationShell({
     super.key,
@@ -21,6 +23,7 @@ class MainNavigationShell extends StatefulWidget {
     required this.onToggleRead,
     required this.onRateBook,
     required this.onUpdateBook,
+    required this.themeService,
   });
 
   @override
@@ -46,6 +49,7 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
         onToggleRead: widget.onToggleRead,
         onRateBook: widget.onRateBook,
         onUpdateBook: widget.onUpdateBook,
+        themeService: widget.themeService,
       ),
       AllBooksScreen(
         books: widget.books,
@@ -101,4 +105,3 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
     );
   }
 }
-

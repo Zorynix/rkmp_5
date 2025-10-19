@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:prac5/services/profile_service.dart';
 import 'package:prac5/services/image_service.dart';
+import 'package:prac5/services/theme_service.dart';
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key});
+  final ThemeService? themeService;
+
+  const ProfileScreen({super.key, this.themeService});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -96,7 +99,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return Scaffold(
         appBar: AppBar(
           title: const Text('Профиль'),
-          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         ),
         body: const Center(child: CircularProgressIndicator()),
       );
@@ -105,20 +107,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Профиль'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         actions: [
-          if (_isEditing)
-            IconButton(
-              icon: const Icon(Icons.check),
-              onPressed: _saveNickname,
-              tooltip: 'Сохранить',
-            )
-          else
-            IconButton(
-              icon: const Icon(Icons.edit),
-              onPressed: () => setState(() => _isEditing = true),
-              tooltip: 'Редактировать',
+          Padding(
+            padding: const EdgeInsets.only(right: 16.0),
+            child: Align(
+              alignment: Alignment.center,
+              child: _isEditing
+                  ? IconButton(
+                      icon: const Icon(Icons.check),
+                      onPressed: _saveNickname,
+                      tooltip: 'Сохранить',
+                    )
+                  : IconButton(
+                      icon: const Icon(Icons.edit),
+                      onPressed: () => setState(() => _isEditing = true),
+                      tooltip: 'Редактировать',
+                    ),
             ),
+          ),
         ],
       ),
       body: SingleChildScrollView(
@@ -219,8 +225,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             const SizedBox(height: 40),
+
+            if (widget.themeService != null)
+              Card(
+                child: ListTile(
+                  leading: Icon(
+                    widget.themeService!.isDarkMode
+                        ? Icons.dark_mode
+                        : Icons.light_mode,
+                  ),
+                  title: const Text('Темная тема'),
+                  subtitle: Text(
+                    widget.themeService!.isDarkMode
+                        ? 'Включена'
+                        : 'Выключена',
+                  ),
+                  trailing: Switch(
+                    value: widget.themeService!.isDarkMode,
+                    onChanged: (value) {
+                      widget.themeService!.toggleTheme();
+                      setState(() {});
+                    },
+                  ),
+                ),
+              ),
+
+            const SizedBox(height: 16),
+
             Card(
-              elevation: 2,
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
@@ -276,4 +308,3 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 }
-
