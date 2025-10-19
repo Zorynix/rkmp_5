@@ -39,7 +39,7 @@ class BooksListScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Библиотека книг'),
+        title: const Text('Список книг'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: books.isEmpty
@@ -54,7 +54,7 @@ class BooksListScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Библиотека пуста',
+                    'Список пуст',
                     style: TextStyle(
                       fontSize: 18,
                       color: Colors.grey[600],

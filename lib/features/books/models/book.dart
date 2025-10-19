@@ -9,6 +9,7 @@ class Book {
   int? rating;
   final DateTime dateAdded;
   DateTime? dateFinished;
+  final String? imageUrl;
 
   Book({
     required this.id,
@@ -21,6 +22,7 @@ class Book {
     this.rating,
     DateTime? dateAdded,
     this.dateFinished,
+    this.imageUrl,
   }) : dateAdded = dateAdded ?? DateTime.now();
 
   Book copyWith({
@@ -34,6 +36,7 @@ class Book {
     int? rating,
     DateTime? dateAdded,
     DateTime? dateFinished,
+    String? imageUrl,
   }) {
     return Book(
       id: id ?? this.id,
@@ -46,6 +49,7 @@ class Book {
       rating: rating ?? this.rating,
       dateAdded: dateAdded ?? this.dateAdded,
       dateFinished: dateFinished ?? this.dateFinished,
+      imageUrl: imageUrl ?? this.imageUrl,
     );
   }
 }

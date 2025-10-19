@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:prac5/features/books/models/book.dart';
-import 'package:prac5/features/books/widgets/statistics_card.dart';
-import 'package:prac5/features/books/widgets/book_tile.dart';
-import 'package:prac5/features/books/screens/book_form_screen.dart';
 import 'package:prac5/features/books/screens/all_books_screen.dart';
 import 'package:prac5/features/books/screens/read_books_screen.dart';
 import 'package:prac5/features/books/screens/want_to_read_screen.dart';
+import 'package:prac5/features/books/screens/book_form_screen.dart';
+import 'package:prac5/features/books/widgets/statistics_card.dart';
+import 'package:prac5/features/books/widgets/book_tile.dart';
 import 'package:prac5/features/profile/profile_screen.dart';
 
-class HomeScreen extends StatefulWidget {
+class PageViewNavigation extends StatefulWidget {
   final List<Book> books;
   final Function(Book) onAddBook;
   final Function(String) onDeleteBook;
@@ -16,7 +16,7 @@ class HomeScreen extends StatefulWidget {
   final Function(String, int) onRateBook;
   final Function(Book) onUpdateBook;
 
-  const HomeScreen({
+  const PageViewNavigation({
     super.key,
     required this.books,
     required this.onAddBook,
@@ -27,16 +27,17 @@ class HomeScreen extends StatefulWidget {
   });
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<PageViewNavigation> createState() => _PageViewNavigationState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 0;
+class _PageViewNavigationState extends State<PageViewNavigation> {
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   void _showAddBookDialog() {
@@ -51,48 +52,6 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
-  }
-
-  void _openProfile() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const ProfileScreen(),
-      ),
-    );
-  }
-
-  Widget _getSelectedScreen() {
-    switch (_selectedIndex) {
-      case 0:
-        return _buildHomeTab();
-      case 1:
-        return AllBooksScreen(
-          books: widget.books,
-          onDeleteBook: widget.onDeleteBook,
-          onToggleRead: widget.onToggleRead,
-          onRateBook: widget.onRateBook,
-          onUpdateBook: widget.onUpdateBook,
-        );
-      case 2:
-        return ReadBooksScreen(
-          books: widget.books.where((book) => book.isRead).toList(),
-          onDeleteBook: widget.onDeleteBook,
-          onToggleRead: widget.onToggleRead,
-          onRateBook: widget.onRateBook,
-          onUpdateBook: widget.onUpdateBook,
-        );
-      case 3:
-        return WantToReadScreen(
-          books: widget.books.where((book) => !book.isRead).toList(),
-          onDeleteBook: widget.onDeleteBook,
-          onToggleRead: widget.onToggleRead,
-          onRateBook: widget.onRateBook,
-          onUpdateBook: widget.onUpdateBook,
-        );
-      default:
-        return _buildHomeTab();
-    }
   }
 
   Widget _buildHomeTab() {
@@ -162,22 +121,12 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
           const SizedBox(height: 24),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Недавно добавленные',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              if (widget.books.length > 5)
-                TextButton(
-                  onPressed: () => _onItemTapped(1),
-                  child: const Text('Все книги'),
-                ),
-            ],
+          const Text(
+            'Недавно добавленные',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: 12),
           if (recentBooks.isEmpty)
@@ -215,50 +164,96 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screens = [
+      _buildHomeTab(),
+      AllBooksScreen(
+        books: widget.books,
+        onDeleteBook: widget.onDeleteBook,
+        onToggleRead: widget.onToggleRead,
+        onRateBook: widget.onRateBook,
+        onUpdateBook: widget.onUpdateBook,
+      ),
+      ReadBooksScreen(
+        books: widget.books.where((book) => book.isRead).toList(),
+        onDeleteBook: widget.onDeleteBook,
+        onToggleRead: widget.onToggleRead,
+        onRateBook: widget.onRateBook,
+        onUpdateBook: widget.onUpdateBook,
+      ),
+      WantToReadScreen(
+        books: widget.books.where((book) => !book.isRead).toList(),
+        onDeleteBook: widget.onDeleteBook,
+        onToggleRead: widget.onToggleRead,
+        onRateBook: widget.onRateBook,
+        onUpdateBook: widget.onUpdateBook,
+      ),
+      const ProfileScreen(),
+    ];
+
+    final titles = [
+      'Главная',
+      'Все книги',
+      'Прочитанные',
+      'Хочу прочитать',
+      'Профиль'
+    ];
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Список книг'),
+      appBar: _currentPage == 4 ? null : AppBar(
+        title: Text(titles[_currentPage]),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.person),
-            onPressed: _openProfile,
-            tooltip: 'Профиль',
+      ),
+      body: Column(
+        children: [
+          if (_currentPage != 4)
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(5, (index) {
+                  return GestureDetector(
+                    onTap: () {
+                      _pageController.animateToPage(
+                        index,
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                      );
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      width: _currentPage == index ? 24 : 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: _currentPage == index
+                            ? Theme.of(context).colorScheme.primary
+                            : Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  );
+                }),
+              ),
+            ),
+          Expanded(
+            child: PageView(
+              controller: _pageController,
+              onPageChanged: (index) {
+                setState(() {
+                  _currentPage = index;
+                });
+              },
+              children: screens,
+            ),
           ),
         ],
       ),
-      body: _getSelectedScreen(),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _selectedIndex,
-        onDestinationSelected: _onItemTapped,
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
-            label: 'Главная',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.menu_book_outlined),
-            selectedIcon: Icon(Icons.menu_book),
-            label: 'Все книги',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.check_circle_outline),
-            selectedIcon: Icon(Icons.check_circle),
-            label: 'Прочитано',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.schedule_outlined),
-            selectedIcon: Icon(Icons.schedule),
-            label: 'Хочу прочитать',
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showAddBookDialog,
-        tooltip: 'Добавить книгу',
-        child: const Icon(Icons.add),
-      ),
+      floatingActionButton: _currentPage != 4
+          ? FloatingActionButton(
+              onPressed: _showAddBookDialog,
+              tooltip: 'Добавить книгу',
+              child: const Icon(Icons.add),
+            )
+          : null,
     );
   }
 }

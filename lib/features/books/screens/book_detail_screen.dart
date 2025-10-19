@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:prac5/features/books/models/book.dart';
 import 'package:prac5/features/books/screens/book_form_screen.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class BookDetailScreen extends StatelessWidget {
   final Book book;
@@ -121,6 +122,41 @@ class BookDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (book.imageUrl != null)
+              Container(
+                width: double.infinity,
+                height: 300,
+                color: Colors.grey[200],
+                child: CachedNetworkImage(
+                  imageUrl: book.imageUrl!,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => Container(
+                    color: Colors.grey[300],
+                    child: const Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  ),
+                  errorWidget: (context, url, error) => Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          book.isRead ? Colors.green : Colors.orange,
+                          book.isRead ? Colors.green.shade300 : Colors.orange.shade300,
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                    ),
+                    child: Center(
+                      child: Icon(
+                        Icons.menu_book,
+                        size: 100,
+                        color: Colors.white.withValues(alpha: 0.7),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(24),

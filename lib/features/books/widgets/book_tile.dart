@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:prac5/features/books/models/book.dart';
 import 'package:prac5/features/books/screens/book_detail_screen.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class BookTile extends StatelessWidget {
   final Book book;
@@ -116,35 +117,79 @@ class BookTile extends StatelessWidget {
             children: [
               Stack(
                 children: [
-                  Container(
-                    width: 60,
-                    height: 85,
-                    decoration: BoxDecoration(
+                  if (book.imageUrl != null)
+                    ClipRRect(
                       borderRadius: BorderRadius.circular(8),
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          book.isRead ? Colors.green.shade400 : Colors.orange.shade400,
-                          book.isRead ? Colors.green.shade700 : Colors.orange.shade700,
+                      child: CachedNetworkImage(
+                        imageUrl: book.imageUrl!,
+                        width: 60,
+                        height: 85,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => Container(
+                          width: 60,
+                          height: 85,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            color: Colors.grey[300],
+                          ),
+                          child: const Center(
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        ),
+                        errorWidget: (context, url, error) => Container(
+                          width: 60,
+                          height: 85,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(8),
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                book.isRead ? Colors.green.shade400 : Colors.orange.shade400,
+                                book.isRead ? Colors.green.shade700 : Colors.orange.shade700,
+                              ],
+                            ),
+                          ),
+                          child: Center(
+                            child: Icon(
+                              Icons.menu_book,
+                              color: Colors.white.withValues(alpha: 0.7),
+                              size: 32,
+                            ),
+                          ),
+                        ),
+                      ),
+                    )
+                  else
+                    Container(
+                      width: 60,
+                      height: 85,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            book.isRead ? Colors.green.shade400 : Colors.orange.shade400,
+                            book.isRead ? Colors.green.shade700 : Colors.orange.shade700,
+                          ],
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.2),
+                            blurRadius: 4,
+                            offset: const Offset(2, 2),
+                          ),
                         ],
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.2),
-                          blurRadius: 4,
-                          offset: const Offset(2, 2),
+                      child: Center(
+                        child: Icon(
+                          Icons.menu_book,
+                          color: Colors.white.withValues(alpha: 0.7),
+                          size: 32,
                         ),
-                      ],
-                    ),
-                    child: Center(
-                      child: Icon(
-                        Icons.menu_book,
-                        color: Colors.white.withValues(alpha: 0.7),
-                        size: 32,
                       ),
                     ),
-                  ),
                   Positioned(
                     top: 4,
                     right: 4,

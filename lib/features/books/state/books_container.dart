@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:prac5/features/books/models/book.dart';
+import 'package:prac5/services/image_service.dart';
 
 class BooksContainer extends StatefulWidget {
   final Widget Function(
@@ -23,10 +24,14 @@ class BooksContainer extends StatefulWidget {
 
 class _BooksContainerState extends State<BooksContainer> {
   final List<Book> _books = [];
+  final ImageService _imageService = ImageService();
 
-  void _addBook(Book book) {
+  void _addBook(Book book) async {
+    final imageUrl = await _imageService.getNextBookImage();
+    final bookWithImage = book.copyWith(imageUrl: imageUrl);
+
     setState(() {
-      _books.add(book);
+      _books.add(bookWithImage);
     });
   }
 
@@ -39,7 +44,13 @@ class _BooksContainerState extends State<BooksContainer> {
     });
   }
 
-  void _deleteBook(String id) {
+  void _deleteBook(String id) async {
+    final book = _books.firstWhere((book) => book.id == id);
+
+    if (book.imageUrl != null) {
+      await _imageService.releaseImage(book.imageUrl!);
+    }
+
     setState(() {
       _books.removeWhere((book) => book.id == id);
     });
