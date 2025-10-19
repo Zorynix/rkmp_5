@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:prac5/features/books/models/book.dart';
-import 'package:prac5/features/navigation/page_view_navigation.dart';
-import 'package:prac5/features/navigation/route_navigation.dart';
+import 'package:prac5/features/navigation_demo/page_view_navigation.dart';
 
 class NavigationSelector extends StatelessWidget {
   final List<Book> books;

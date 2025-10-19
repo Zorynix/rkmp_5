@@ -87,7 +87,7 @@ class _AllBooksScreenState extends State<AllBooksScreen> {
                 children: [
                   Expanded(
                     child: DropdownButtonFormField<String>(
-                      value: _selectedGenre,
+                      initialValue: _selectedGenre,
                       decoration: const InputDecoration(
                         labelText: 'Жанр',
                         border: OutlineInputBorder(),
@@ -109,7 +109,7 @@ class _AllBooksScreenState extends State<AllBooksScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: DropdownButtonFormField<String>(
-                      value: _sortBy,
+                      initialValue: _sortBy,
                       decoration: const InputDecoration(
                         labelText: 'Сортировка',
                         border: OutlineInputBorder(),
