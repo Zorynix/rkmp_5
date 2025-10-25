@@ -1,21 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:prac5/services/profile_service.dart';
-import 'package:prac5/services/image_service.dart';
-import 'package:prac5/services/theme_service.dart';
+import 'package:prac5/core/di/service_locator.dart';
 
 class ProfileScreen extends StatefulWidget {
-  final ThemeService? themeService;
-
-  const ProfileScreen({super.key, this.themeService});
+  const ProfileScreen({super.key});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  final ProfileService _profileService = ProfileService();
-  final ImageService _imageService = ImageService();
   final TextEditingController _nicknameController = TextEditingController();
 
   UserProfile? _profile;
@@ -36,7 +31,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _loadProfile() async {
     setState(() => _isLoading = true);
-    final profile = await _profileService.getProfile();
+    final profile = await Services.profile.getProfile();
     setState(() {
       _profile = profile;
       _nicknameController.text = profile.nickname;
@@ -52,7 +47,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return;
     }
 
-    await _profileService.updateNickname(_nicknameController.text.trim());
+    await Services.profile.updateNickname(_nicknameController.text.trim());
     setState(() {
       _profile?.nickname = _nicknameController.text.trim();
       _isEditing = false;
@@ -66,7 +61,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _changeAvatar() async {
-    final newAvatarUrl = await _imageService.getNextAvatar();
+    final newAvatarUrl = await Services.image.getNextAvatar();
 
     if (newAvatarUrl == null) {
       if (mounted) {
@@ -76,7 +71,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
       return;
     }
-    await _profileService.updateAvatar(newAvatarUrl);
+
+    await Services.profile.updateAvatar(newAvatarUrl);
 
     setState(() {
       _profile = UserProfile(
@@ -226,29 +222,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 40),
 
-            if (widget.themeService != null)
-              Card(
-                child: ListTile(
-                  leading: Icon(
-                    widget.themeService!.isDarkMode
-                        ? Icons.dark_mode
-                        : Icons.light_mode,
-                  ),
-                  title: const Text('Темная тема'),
-                  subtitle: Text(
-                    widget.themeService!.isDarkMode
-                        ? 'Включена'
-                        : 'Выключена',
-                  ),
-                  trailing: Switch(
-                    value: widget.themeService!.isDarkMode,
-                    onChanged: (value) {
-                      widget.themeService!.toggleTheme();
-                      setState(() {});
-                    },
-                  ),
+            Card(
+              child: ListTile(
+                leading: Icon(
+                  Services.theme.isDarkMode
+                      ? Icons.dark_mode
+                      : Icons.light_mode,
+                ),
+                title: const Text('Темная тема'),
+                subtitle: Text(
+                  Services.theme.isDarkMode
+                      ? 'Включена'
+                      : 'Выключена',
+                ),
+                trailing: Switch(
+                  value: Services.theme.isDarkMode,
+                  onChanged: (value) async {
+                    await Services.theme.toggleTheme();
+                    setState(() {});
+                  },
                 ),
               ),
+            ),
 
             const SizedBox(height: 16),
 

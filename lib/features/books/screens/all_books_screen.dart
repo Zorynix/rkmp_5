@@ -2,22 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:prac5/features/books/models/book.dart';
 import 'package:prac5/features/books/widgets/book_tile.dart';
 import 'package:prac5/shared/widgets/empty_state.dart';
+import 'package:prac5/core/widgets/app_state_inherited_widget.dart';
 
 class AllBooksScreen extends StatefulWidget {
-  final List<Book> books;
-  final Function(String) onDeleteBook;
-  final Function(String, bool) onToggleRead;
-  final Function(String, int) onRateBook;
-  final Function(Book) onUpdateBook;
-
-  const AllBooksScreen({
-    super.key,
-    required this.books,
-    required this.onDeleteBook,
-    required this.onToggleRead,
-    required this.onRateBook,
-    required this.onUpdateBook,
-  });
+  const AllBooksScreen({super.key});
 
   @override
   State<AllBooksScreen> createState() => _AllBooksScreenState();
@@ -28,8 +16,8 @@ class _AllBooksScreenState extends State<AllBooksScreen> {
   String _selectedGenre = 'Все';
   String _sortBy = 'dateAdded';
 
-  List<Book> get _filteredBooks {
-    var filtered = widget.books.where((book) {
+  List<Book> _getFilteredBooks(List<Book> books) {
+    var filtered = books.where((book) {
       final matchesSearch = book.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
           book.author.toLowerCase().contains(_searchQuery.toLowerCase());
       final matchesGenre = _selectedGenre == 'Все' || book.genre == _selectedGenre;
@@ -54,15 +42,24 @@ class _AllBooksScreenState extends State<AllBooksScreen> {
     return filtered;
   }
 
-  List<String> get _genres {
-    final genres = widget.books.map((book) => book.genre).toSet().toList();
+  List<String> _getGenres(List<Book> books) {
+    final genres = books.map((book) => book.genre).toSet().toList();
     genres.sort();
     return ['Все', ...genres];
   }
 
   @override
   Widget build(BuildContext context) {
-    final filteredBooks = _filteredBooks;
+    final appState = AppStateInheritedWidget.of(context);
+
+    if (appState == null) {
+      return const Scaffold(
+        body: Center(child: Text('Ошибка: AppState не найден')),
+      );
+    }
+
+    final filteredBooks = _getFilteredBooks(appState.books);
+    final genres = _getGenres(appState.books);
 
     return Column(
       children: [
@@ -93,7 +90,7 @@ class _AllBooksScreenState extends State<AllBooksScreen> {
                         border: OutlineInputBorder(),
                         contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       ),
-                      items: _genres.map((genre) {
+                      items: genres.map((genre) {
                         return DropdownMenuItem(
                           value: genre,
                           child: Text(genre),
@@ -148,10 +145,10 @@ class _AllBooksScreenState extends State<AllBooksScreen> {
                     return BookTile(
                       key: ValueKey(book.id),
                       book: book,
-                      onDelete: () => widget.onDeleteBook(book.id),
-                      onToggleRead: (isRead) => widget.onToggleRead(book.id, isRead),
-                      onRate: (rating) => widget.onRateBook(book.id, rating),
-                      onUpdate: widget.onUpdateBook,
+                      onDelete: () => appState.onDeleteBook(book.id),
+                      onToggleRead: (isRead) => appState.onToggleRead(book.id, isRead),
+                      onRate: (rating) => appState.onRateBook(book.id, rating),
+                      onUpdate: appState.onUpdateBook,
                     );
                   },
                 ),

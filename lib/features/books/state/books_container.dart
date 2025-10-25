@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:prac5/features/books/models/book.dart';
-import 'package:prac5/services/image_service.dart';
+import 'package:prac5/core/di/service_locator.dart';
 
 class BooksContainer extends StatefulWidget {
   final Widget Function(
@@ -23,15 +23,14 @@ class BooksContainer extends StatefulWidget {
 }
 
 class _BooksContainerState extends State<BooksContainer> {
-  final List<Book> _books = [];
-  final ImageService _imageService = ImageService();
+  List<Book> _books = [];
 
   void _addBook(Book book) async {
-    final imageUrl = await _imageService.getNextBookImage();
+    final imageUrl = await Services.image.getNextBookImage();
     final bookWithImage = book.copyWith(imageUrl: imageUrl);
 
     setState(() {
-      _books.add(bookWithImage);
+      _books = [..._books, bookWithImage];
     });
   }
 
@@ -39,6 +38,7 @@ class _BooksContainerState extends State<BooksContainer> {
     setState(() {
       final index = _books.indexWhere((book) => book.id == updatedBook.id);
       if (index != -1) {
+        _books = List.from(_books);
         _books[index] = updatedBook;
       }
     });
@@ -48,11 +48,11 @@ class _BooksContainerState extends State<BooksContainer> {
     final book = _books.firstWhere((book) => book.id == id);
 
     if (book.imageUrl != null) {
-      await _imageService.releaseImage(book.imageUrl!);
+      await Services.image.releaseImage(book.imageUrl!);
     }
 
     setState(() {
-      _books.removeWhere((book) => book.id == id);
+      _books = _books.where((book) => book.id != id).toList();
     });
   }
 
@@ -60,6 +60,7 @@ class _BooksContainerState extends State<BooksContainer> {
     setState(() {
       final index = _books.indexWhere((book) => book.id == id);
       if (index != -1) {
+        _books = List.from(_books);
         _books[index].isRead = isRead;
         _books[index].dateFinished = isRead ? DateTime.now() : null;
       }
@@ -70,6 +71,7 @@ class _BooksContainerState extends State<BooksContainer> {
     setState(() {
       final index = _books.indexWhere((book) => book.id == id);
       if (index != -1) {
+        _books = List.from(_books);
         _books[index].rating = rating;
       }
     });

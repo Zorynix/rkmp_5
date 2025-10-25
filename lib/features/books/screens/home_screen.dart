@@ -1,36 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:prac5/features/books/models/book.dart';
 import 'package:prac5/features/books/widgets/book_tile.dart';
 import 'package:prac5/features/books/screens/book_form_screen.dart';
 import 'package:prac5/features/profile/profile_screen.dart';
-import 'package:prac5/services/theme_service.dart';
+import 'package:prac5/core/widgets/app_state_inherited_widget.dart';
 
 class HomeScreen extends StatelessWidget {
-  final List<Book> books;
-  final Function(Book) onAddBook;
-  final Function(String) onDeleteBook;
-  final Function(String, bool) onToggleRead;
-  final Function(String, int) onRateBook;
-  final Function(Book) onUpdateBook;
-  final ThemeService themeService;
+  const HomeScreen({super.key});
 
-  const HomeScreen({
-    super.key,
-    required this.books,
-    required this.onAddBook,
-    required this.onDeleteBook,
-    required this.onToggleRead,
-    required this.onRateBook,
-    required this.onUpdateBook,
-    required this.themeService,
-  });
-
-  void _showAddBookDialog(BuildContext context) {
+  void _showAddBookDialog(BuildContext context, AppStateInheritedWidget appState) {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => BookFormScreen(
           onSave: (book) {
-            onAddBook(book);
+            appState.onAddBook(book);
             Navigator.of(context).pop();
           },
         ),
@@ -41,32 +23,29 @@ class HomeScreen extends StatelessWidget {
   void _openProfile(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => ProfileScreen(themeService: themeService),
+        builder: (context) => const ProfileScreen(),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final appState = AppStateInheritedWidget.of(context);
+
+    if (appState == null) {
+      return const Scaffold(
+        body: Center(child: Text('Ошибка: AppState не найден')),
+      );
+    }
+
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    final totalBooks = books.length;
-    final readBooks = books.where((book) => book.isRead).length;
-    final wantToRead = totalBooks - readBooks;
-    final averageRating = books.where((book) => book.rating != null).isEmpty
-        ? 0.0
-        : books
-                .where((book) => book.rating != null)
-                .map((book) => book.rating!)
-                .reduce((a, b) => a + b) /
-            books.where((book) => book.rating != null).length;
-
-    final recentBooks = books.isEmpty
-        ? <Book> []
-        : (books.toList()..sort((a, b) => b.dateAdded.compareTo(a.dateAdded)))
-            .take(5)
-            .toList();
+    final totalBooks = appState.totalBooks;
+    final readBooks = appState.readBooks;
+    final wantToRead = appState.wantToReadBooks;
+    final averageRating = appState.averageRating;
+    final recentBooks = appState.recentBooks;
 
     return Scaffold(
       body: CustomScrollView(
@@ -170,7 +149,7 @@ class HomeScreen extends StatelessWidget {
                               ),
                             ),
                             InkWell(
-                              onTap: () => _showAddBookDialog(context),
+                              onTap: () => _showAddBookDialog(context, appState),
                               borderRadius: BorderRadius.circular(12),
                               child: Container(
                                 padding: const EdgeInsets.all(12),
@@ -261,7 +240,7 @@ class HomeScreen extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      if (books.length > 5)
+                      if (appState.books.length > 5)
                         TextButton.icon(
                           onPressed: () {
                           },
@@ -320,10 +299,10 @@ class HomeScreen extends StatelessWidget {
                       child: BookTile(
                         key: ValueKey(book.id),
                         book: book,
-                        onDelete: () => onDeleteBook(book.id),
-                        onToggleRead: (isRead) => onToggleRead(book.id, isRead),
-                        onRate: (rating) => onRateBook(book.id, rating),
-                        onUpdate: onUpdateBook,
+                        onDelete: () => appState.onDeleteBook(book.id),
+                        onToggleRead: (isRead) => appState.onToggleRead(book.id, isRead),
+                        onRate: (rating) => appState.onRateBook(book.id, rating),
+                        onUpdate: appState.onUpdateBook,
                       ),
                     );
                   },

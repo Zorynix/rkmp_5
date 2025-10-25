@@ -1,30 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:prac5/features/books/models/book.dart';
 import 'package:prac5/features/books/screens/home_screen.dart';
 import 'package:prac5/features/books/screens/all_books_screen.dart';
 import 'package:prac5/features/books/screens/read_books_screen.dart';
 import 'package:prac5/features/books/screens/want_to_read_screen.dart';
-import 'package:prac5/services/theme_service.dart';
+import 'package:prac5/core/widgets/app_state_inherited_widget.dart';
 
 class MainNavigationShell extends StatefulWidget {
-  final List<Book> books;
-  final Function(Book) onAddBook;
-  final Function(String) onDeleteBook;
-  final Function(String, bool) onToggleRead;
-  final Function(String, int) onRateBook;
-  final Function(Book) onUpdateBook;
-  final ThemeService themeService;
-
-  const MainNavigationShell({
-    super.key,
-    required this.books,
-    required this.onAddBook,
-    required this.onDeleteBook,
-    required this.onToggleRead,
-    required this.onRateBook,
-    required this.onUpdateBook,
-    required this.themeService,
-  });
+  const MainNavigationShell({super.key});
 
   @override
   State<MainNavigationShell> createState() => _MainNavigationShellState();
@@ -41,37 +23,19 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
 
   @override
   Widget build(BuildContext context) {
+    final appState = AppStateInheritedWidget.of(context);
+
+    if (appState == null) {
+      return const Scaffold(
+        body: Center(child: Text('Ошибка: AppState не найден')),
+      );
+    }
+
     final List<Widget> screens = [
-      HomeScreen(
-        books: widget.books,
-        onAddBook: widget.onAddBook,
-        onDeleteBook: widget.onDeleteBook,
-        onToggleRead: widget.onToggleRead,
-        onRateBook: widget.onRateBook,
-        onUpdateBook: widget.onUpdateBook,
-        themeService: widget.themeService,
-      ),
-      AllBooksScreen(
-        books: widget.books,
-        onDeleteBook: widget.onDeleteBook,
-        onToggleRead: widget.onToggleRead,
-        onRateBook: widget.onRateBook,
-        onUpdateBook: widget.onUpdateBook,
-      ),
-      ReadBooksScreen(
-        books: widget.books.where((book) => book.isRead).toList(),
-        onDeleteBook: widget.onDeleteBook,
-        onToggleRead: widget.onToggleRead,
-        onRateBook: widget.onRateBook,
-        onUpdateBook: widget.onUpdateBook,
-      ),
-      WantToReadScreen(
-        books: widget.books.where((book) => !book.isRead).toList(),
-        onDeleteBook: widget.onDeleteBook,
-        onToggleRead: widget.onToggleRead,
-        onRateBook: widget.onRateBook,
-        onUpdateBook: widget.onUpdateBook,
-      ),
+      const HomeScreen(),
+      const AllBooksScreen(),
+      const ReadBooksScreen(),
+      const WantToReadScreen(),
     ];
 
     return Scaffold(

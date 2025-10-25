@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:prac5/shared/app_theme.dart';
 import 'package:prac5/features/books/books_feature.dart';
 import 'package:prac5/features/navigation/main_navigation_shell.dart';
-import 'package:prac5/services/theme_service.dart';
+import 'package:prac5/core/di/service_locator.dart';
+import 'package:prac5/core/widgets/app_state_inherited_widget.dart';
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
@@ -12,19 +13,17 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  final ThemeService _themeService = ThemeService();
-
   @override
   void initState() {
     super.initState();
-    _themeService.addListener(() {
+    Services.theme.addListener(() {
       setState(() {});
     });
   }
 
   @override
   void dispose() {
-    _themeService.dispose();
+    Services.theme.removeListener(() {});
     super.dispose();
   }
 
@@ -34,18 +33,19 @@ class _MyAppState extends State<MyApp> {
       title: 'Список книг',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: _themeService.themeMode,
+      themeMode: Services.theme.themeMode,
       debugShowCheckedModeBanner: false,
       home: BooksContainer(
         builder: (context, books, onAddBook, onDeleteBook, onToggleRead, onRateBook, onUpdateBook) {
-          return MainNavigationShell(
+          return AppStateInheritedWidget(
             books: books,
             onAddBook: onAddBook,
             onDeleteBook: onDeleteBook,
             onToggleRead: onToggleRead,
             onRateBook: onRateBook,
             onUpdateBook: onUpdateBook,
-            themeService: _themeService,
+            themeService: Services.theme,
+            child: const MainNavigationShell(),
           );
         },
       ),
