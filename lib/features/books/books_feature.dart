@@ -1,5 +1,8 @@
 export 'models/book.dart';
 export 'state/books_container.dart';
+export 'bloc/books_bloc.dart';
+export 'bloc/books_event.dart';
+export 'bloc/books_state.dart';
 export 'screens/home_screen.dart';
 export 'screens/all_books_screen.dart';
 export 'screens/read_books_screen.dart';

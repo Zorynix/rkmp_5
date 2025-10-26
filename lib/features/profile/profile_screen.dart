@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:prac5/services/profile_service.dart';
 import 'package:prac5/core/di/service_locator.dart';
+import 'package:prac5/features/theme/bloc/theme_bloc.dart';
+import 'package:prac5/features/theme/bloc/theme_event.dart';
+import 'package:prac5/features/theme/bloc/theme_state.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -223,25 +227,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 40),
 
             Card(
-              child: ListTile(
-                leading: Icon(
-                  Services.theme.isDarkMode
-                      ? Icons.dark_mode
-                      : Icons.light_mode,
-                ),
-                title: const Text('Темная тема'),
-                subtitle: Text(
-                  Services.theme.isDarkMode
-                      ? 'Включена'
-                      : 'Выключена',
-                ),
-                trailing: Switch(
-                  value: Services.theme.isDarkMode,
-                  onChanged: (value) async {
-                    await Services.theme.toggleTheme();
-                    setState(() {});
-                  },
-                ),
+              child: BlocBuilder<ThemeBloc, ThemeState>(
+                builder: (context, themeState) {
+                  final isDark = themeState is ThemeLoaded && themeState.isDarkMode;
+
+                  return ListTile(
+                    leading: Icon(
+                      isDark ? Icons.dark_mode : Icons.light_mode,
+                    ),
+                    title: const Text('Темная тема'),
+                    subtitle: Text(isDark ? 'Включена' : 'Выключена'),
+                    trailing: Switch(
+                      value: isDark,
+                      onChanged: (value) {
+                        context.read<ThemeBloc>().add(const ToggleTheme());
+                      },
+                    ),
+                  );
+                },
               ),
             ),
 

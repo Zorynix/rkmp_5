@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:prac5/features/books/widgets/book_tile.dart';
 import 'package:prac5/features/books/screens/book_form_screen.dart';
 import 'package:prac5/features/profile/profile_screen.dart';
-import 'package:prac5/core/widgets/app_state_inherited_widget.dart';
+import 'package:prac5/features/books/bloc/books_bloc.dart';
+import 'package:prac5/features/books/bloc/books_event.dart';
+import 'package:prac5/features/books/bloc/books_state.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
-  void _showAddBookDialog(BuildContext context, AppStateInheritedWidget appState) {
+  void _showAddBookDialog(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => BookFormScreen(
           onSave: (book) {
-            appState.onAddBook(book);
+            context.read<BooksBloc>().add(AddBook(book));
             Navigator.of(context).pop();
           },
         ),
@@ -30,291 +33,307 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final appState = AppStateInheritedWidget.of(context);
-
-    if (appState == null) {
-      return const Scaffold(
-        body: Center(child: Text('Ошибка: AppState не найден')),
-      );
-    }
-
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    final totalBooks = appState.totalBooks;
-    final readBooks = appState.readBooks;
-    final wantToRead = appState.wantToReadBooks;
-    final averageRating = appState.averageRating;
-    final recentBooks = appState.recentBooks;
-
     return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar.large(
-            floating: true,
-            pinned: true,
-            expandedHeight: 120,
-            flexibleSpace: FlexibleSpaceBar(
-              title: const Text(
-                'Список книг',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              background: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      colorScheme.primaryContainer,
-                      colorScheme.secondaryContainer,
-                    ],
-                  ),
-                ),
-              ),
-              centerTitle: true,
-            ),
-            actions: [
-              Padding(
-                padding: const EdgeInsets.only(right: 16.0),
-                child: Align(
-                  alignment: Alignment.center,
-                  child: IconButton(
-                    icon: const Icon(Icons.person_outline),
-                    onPressed: () => _openProfile(context),
-                    tooltip: 'Профиль',
-                  ),
-                ),
-              ),
-            ],
-          ),
+      body: BlocBuilder<BooksBloc, BooksState>(
+        builder: (context, state) {
+          if (state is BooksLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
+          if (state is BooksError) {
+            return Center(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(24),
+                  Icon(Icons.error_outline, size: 64, color: colorScheme.error),
+                  const SizedBox(height: 16),
+                  Text(state.message, style: theme.textTheme.titleMedium),
+                ],
+              ),
+            );
+          }
+
+          if (state is! BooksLoaded) {
+            return const Center(child: Text('Неизвестное состояние'));
+          }
+
+          final totalBooks = state.totalBooks;
+          final readBooks = state.readBooks;
+          final wantToRead = state.wantToReadBooks;
+          final averageRating = state.averageRating;
+          final recentBooks = state.recentBooks;
+
+          return CustomScrollView(
+            slivers: [
+              SliverAppBar.large(
+                floating: true,
+                pinned: true,
+                expandedHeight: 120,
+                flexibleSpace: FlexibleSpaceBar(
+                  title: const Text(
+                    'Список книг',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  background: Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                         colors: [
-                          colorScheme.primary,
-                          colorScheme.secondary,
+                          colorScheme.primaryContainer,
+                          colorScheme.secondaryContainer,
                         ],
                       ),
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: colorScheme.primary.withValues(alpha: 0.3),
-                          blurRadius: 20,
-                          offset: const Offset(0, 10),
-                        ),
-                      ],
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.auto_stories,
-                              color: colorScheme.onPrimary,
-                              size: 32,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Моя коллекция',
-                                    style: TextStyle(
-                                      color: colorScheme.onPrimary,
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  Text(
-                                    '$totalBooks ${_getBooksWord(totalBooks)}',
-                                    style: TextStyle(
-                                      color: colorScheme.onPrimary.withValues(alpha: 0.9),
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            InkWell(
-                              onTap: () => _showAddBookDialog(context, appState),
-                              borderRadius: BorderRadius.circular(12),
-                              child: Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: colorScheme.onPrimary.withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Icon(
-                                  Icons.add,
-                                  color: colorScheme.onPrimary,
-                                ),
-                              ),
+                  ),
+                  centerTitle: true,
+                ),
+                actions: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 16.0),
+                    child: Align(
+                      alignment: Alignment.center,
+                      child: IconButton(
+                        icon: const Icon(Icons.person_outline),
+                        onPressed: () => _openProfile(context),
+                        tooltip: 'Профиль',
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              colorScheme.primary,
+                              colorScheme.secondary,
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: colorScheme.primary.withValues(alpha: 0.3),
+                              blurRadius: 20,
+                              offset: const Offset(0, 10),
                             ),
                           ],
                         ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  Text(
-                    'Статистика',
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildStatCard(
-                          context: context,
-                          icon: Icons.check_circle_outline,
-                          value: readBooks.toString(),
-                          label: 'Прочитано',
-                          color: Colors.green,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.auto_stories,
+                                  color: colorScheme.onPrimary,
+                                  size: 32,
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Моя коллекция',
+                                        style: TextStyle(
+                                          color: colorScheme.onPrimary,
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      Text(
+                                        '$totalBooks ${_getBooksWord(totalBooks)}',
+                                        style: TextStyle(
+                                          color: colorScheme.onPrimary.withValues(alpha: 0.9),
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                InkWell(
+                                  onTap: () => _showAddBookDialog(context),
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: colorScheme.onPrimary.withValues(alpha: 0.2),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Icon(
+                                      Icons.add,
+                                      color: colorScheme.onPrimary,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _buildStatCard(
-                          context: context,
-                          icon: Icons.schedule_outlined,
-                          value: wantToRead.toString(),
-                          label: 'В планах',
-                          color: Colors.orange,
-                        ),
-                      ),
-                    ],
-                  ),
 
-                  const SizedBox(height: 12),
+                      const SizedBox(height: 24),
 
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildStatCard(
-                          context: context,
-                          icon: Icons.star_outline,
-                          value: averageRating.toStringAsFixed(1),
-                          label: 'Средняя оценка',
-                          color: Colors.amber,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _buildStatCard(
-                          context: context,
-                          icon: Icons.trending_up,
-                          value: '${(totalBooks > 0 ? (readBooks / totalBooks * 100) : 0).toStringAsFixed(0)}%',
-                          label: 'Прогресс',
-                          color: Colors.blue,
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 32),
-
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
                       Text(
-                        'Недавно добавленные',
+                        'Статистика',
                         style: theme.textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      if (appState.books.length > 5)
-                        TextButton.icon(
-                          onPressed: () {
-                          },
-                          icon: const Icon(Icons.arrow_forward, size: 18),
-                          label: const Text('Все'),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                ],
-              ),
-            ),
-          ),
+                      const SizedBox(height: 12),
 
-          if (recentBooks.isEmpty)
-            SliverToBoxAdapter(
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(48),
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.menu_book_outlined,
-                        size: 80,
-                        color: colorScheme.outline,
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildStatCard(
+                              context: context,
+                              icon: Icons.check_circle_outline,
+                              value: readBooks.toString(),
+                              label: 'Прочитано',
+                              color: Colors.green,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _buildStatCard(
+                              context: context,
+                              icon: Icons.schedule_outlined,
+                              value: wantToRead.toString(),
+                              label: 'В планах',
+                              color: Colors.orange,
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Книг пока нет',
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          color: colorScheme.outline,
-                        ),
+
+                      const SizedBox(height: 12),
+
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildStatCard(
+                              context: context,
+                              icon: Icons.star_outline,
+                              value: averageRating.toStringAsFixed(1),
+                              label: 'Средняя оценка',
+                              color: Colors.amber,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _buildStatCard(
+                              context: context,
+                              icon: Icons.trending_up,
+                              value: '${(totalBooks > 0 ? (readBooks / totalBooks * 100) : 0).toStringAsFixed(0)}%',
+                              label: 'Прогресс',
+                              color: Colors.blue,
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Добавьте первую книгу в коллекцию',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: colorScheme.outline,
-                        ),
-                        textAlign: TextAlign.center,
+
+                      const SizedBox(height: 32),
+
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Недавно добавленные',
+                            style: theme.textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          if (state.books.length > 5)
+                            TextButton.icon(
+                              onPressed: () {},
+                              icon: const Icon(Icons.arrow_forward, size: 18),
+                              label: const Text('Все'),
+                            ),
+                        ],
                       ),
+                      const SizedBox(height: 12),
                     ],
                   ),
                 ),
               ),
-            )
-          else
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final book = recentBooks[index];
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: BookTile(
-                        key: ValueKey(book.id),
-                        book: book,
-                        onDelete: () => appState.onDeleteBook(book.id),
-                        onToggleRead: (isRead) => appState.onToggleRead(book.id, isRead),
-                        onRate: (rating) => appState.onRateBook(book.id, rating),
-                        onUpdate: appState.onUpdateBook,
-                      ),
-                    );
-                  },
-                  childCount: recentBooks.length,
-                ),
-              ),
-            ),
 
-          const SliverToBoxAdapter(
-            child: SizedBox(height: 100),
-          ),
-        ],
+              if (recentBooks.isEmpty)
+                SliverToBoxAdapter(
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(48),
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.menu_book_outlined,
+                            size: 80,
+                            color: colorScheme.outline,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Книг пока нет',
+                            style: theme.textTheme.titleLarge?.copyWith(
+                              color: colorScheme.outline,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Добавьте первую книгу в коллекцию',
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: colorScheme.outline,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                )
+              else
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final book = recentBooks[index];
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: BookTile(
+                            key: ValueKey(book.id),
+                            book: book,
+                            onDelete: () => context.read<BooksBloc>().add(DeleteBook(book.id)),
+                            onToggleRead: (isRead) => context.read<BooksBloc>().add(ToggleBookRead(book.id, isRead)),
+                            onRate: (rating) => context.read<BooksBloc>().add(RateBook(book.id, rating)),
+                            onUpdate: (book) => context.read<BooksBloc>().add(UpdateBook(book)),
+                          ),
+                        );
+                      },
+                      childCount: recentBooks.length,
+                    ),
+                  ),
+                ),
+
+              const SliverToBoxAdapter(
+                child: SizedBox(height: 100),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -378,3 +397,4 @@ class HomeScreen extends StatelessWidget {
     }
   }
 }
+
