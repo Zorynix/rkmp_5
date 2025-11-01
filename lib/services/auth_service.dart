@@ -40,7 +40,9 @@ class AuthService {
     final prefs = await SharedPreferences.getInstance();
 
     final existingUsername = prefs.getString(_keyUsername);
-    if (existingUsername != null) {
+    final isCurrentlyLoggedIn = prefs.getBool(_keyIsLoggedIn) ?? false;
+
+    if (existingUsername != null && isCurrentlyLoggedIn) {
       return false;
     }
 
@@ -63,6 +65,13 @@ class AuthService {
   Future<bool> hasAccount() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_keyUsername) != null;
+  }
+
+  Future<void> clearAccount() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_keyUsername);
+    await prefs.remove(_keyPassword);
+    await prefs.remove(_keyIsLoggedIn);
   }
 }
 

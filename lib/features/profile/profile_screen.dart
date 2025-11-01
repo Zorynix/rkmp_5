@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:go_router/go_router.dart';
 import 'package:prac5/services/profile_service.dart';
 import 'package:prac5/core/di/service_locator.dart';
 import 'package:prac5/features/theme/bloc/theme_bloc.dart';
 import 'package:prac5/features/theme/bloc/theme_event.dart';
 import 'package:prac5/features/theme/bloc/theme_state.dart';
-import 'package:prac5/features/auth/auth_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -116,12 +116,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (confirmed == true && mounted) {
       await Services.auth.logout();
       if (mounted) {
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(
-            builder: (context) => const AuthScreen(),
-          ),
-          (route) => false,
-        );
+        context.go('/auth');
       }
     }
   }

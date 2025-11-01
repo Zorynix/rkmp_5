@@ -6,10 +6,10 @@ import 'package:prac5/features/books/bloc/books_event.dart';
 import 'package:prac5/features/theme/bloc/theme_bloc.dart';
 import 'package:prac5/features/theme/bloc/theme_event.dart';
 import 'package:prac5/features/theme/bloc/theme_state.dart';
-import 'package:prac5/features/auth/initial_screen.dart';
+import 'package:prac5/core/router/app_router.dart';
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class BooksApp extends StatelessWidget {
+  const BooksApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -28,13 +28,13 @@ class MyApp extends StatelessWidget {
               ? themeState.themeMode
               : ThemeMode.light;
 
-          return MaterialApp(
+          return MaterialApp.router(
             title: 'Список книг',
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
             themeMode: themeMode,
             debugShowCheckedModeBanner: false,
-            home: const InitialScreen(),
+            routerConfig: AppRouter.router,
           );
         },
       ),

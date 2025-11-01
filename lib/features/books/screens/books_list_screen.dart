@@ -79,10 +79,6 @@ class BooksListScreen extends StatelessWidget {
                 return BookTile(
                   key: ValueKey(book.id),
                   book: book,
-                  onDelete: () => onDeleteBook(book.id),
-                  onToggleRead: (isRead) => onToggleRead(book.id, isRead),
-                  onRate: (rating) => onRateBook(book.id, rating),
-                  onUpdate: onUpdateBook,
                 );
               },
             ),

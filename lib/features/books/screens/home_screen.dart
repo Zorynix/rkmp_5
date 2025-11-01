@@ -1,36 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:prac5/features/books/widgets/book_tile.dart';
 import 'package:prac5/features/books/screens/book_form_screen.dart';
-import 'package:prac5/features/profile/profile_screen.dart';
 import 'package:prac5/features/books/bloc/books_bloc.dart';
 import 'package:prac5/features/books/bloc/books_event.dart';
 import 'package:prac5/features/books/bloc/books_state.dart';
-import 'package:prac5/features/books/screens/read_books_screen.dart';
-import 'package:prac5/features/books/screens/want_to_read_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   void _showAddBookDialog(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => BookFormScreen(
-          onSave: (book) {
-            context.read<BooksBloc>().add(AddBook(book));
-            Navigator.of(context).pop();
-          },
-        ),
-      ),
-    );
+    context.push('/book-form', extra: {
+      'onSave': (book) {
+        context.read<BooksBloc>().add(AddBook(book));
+        context.pop();
+      },
+    });
   }
 
   void _openProfile(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const ProfileScreen(),
-      ),
-    );
+    context.push('/profile');
   }
 
   @override
@@ -203,18 +193,7 @@ class HomeScreen extends StatelessWidget {
                         children: [
                           Expanded(
                             child: GestureDetector(
-                              onTap: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (context) => Scaffold(
-                                      appBar: AppBar(
-                                        title: const Text('Прочитанные книги'),
-                                      ),
-                                      body: const ReadBooksScreen(),
-                                    ),
-                                  ),
-                                );
-                              },
+                              onTap: () => context.push('/read-books'),
                               child: _buildStatCard(
                                 context: context,
                                 icon: Icons.check_circle_outline,
@@ -227,18 +206,7 @@ class HomeScreen extends StatelessWidget {
                           const SizedBox(width: 12),
                           Expanded(
                             child: GestureDetector(
-                              onTap: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (context) => Scaffold(
-                                      appBar: AppBar(
-                                        title: const Text('Планирую прочитать'),
-                                      ),
-                                      body: const WantToReadScreen(),
-                                    ),
-                                  ),
-                                );
-                              },
+                              onTap: () => context.push('/want-to-read'),
                               child: _buildStatCard(
                                 context: context,
                                 icon: Icons.schedule_outlined,
@@ -346,10 +314,6 @@ class HomeScreen extends StatelessWidget {
                           child: BookTile(
                             key: ValueKey(book.id),
                             book: book,
-                            onDelete: () => context.read<BooksBloc>().add(DeleteBook(book.id)),
-                            onToggleRead: (isRead) => context.read<BooksBloc>().add(ToggleBookRead(book.id, isRead)),
-                            onRate: (rating) => context.read<BooksBloc>().add(RateBook(book.id, rating)),
-                            onUpdate: (book) => context.read<BooksBloc>().add(UpdateBook(book)),
                           ),
                         );
                       },
