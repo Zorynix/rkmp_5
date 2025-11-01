@@ -6,6 +6,8 @@ import 'package:prac5/features/profile/profile_screen.dart';
 import 'package:prac5/features/books/bloc/books_bloc.dart';
 import 'package:prac5/features/books/bloc/books_event.dart';
 import 'package:prac5/features/books/bloc/books_state.dart';
+import 'package:prac5/features/books/screens/read_books_screen.dart';
+import 'package:prac5/features/books/screens/want_to_read_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -200,22 +202,50 @@ class HomeScreen extends StatelessWidget {
                       Row(
                         children: [
                           Expanded(
-                            child: _buildStatCard(
-                              context: context,
-                              icon: Icons.check_circle_outline,
-                              value: readBooks.toString(),
-                              label: 'Прочитано',
-                              color: Colors.green,
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) => Scaffold(
+                                      appBar: AppBar(
+                                        title: const Text('Прочитанные книги'),
+                                      ),
+                                      body: const ReadBooksScreen(),
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: _buildStatCard(
+                                context: context,
+                                icon: Icons.check_circle_outline,
+                                value: readBooks.toString(),
+                                label: 'Прочитано',
+                                color: Colors.green,
+                              ),
                             ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
-                            child: _buildStatCard(
-                              context: context,
-                              icon: Icons.schedule_outlined,
-                              value: wantToRead.toString(),
-                              label: 'В планах',
-                              color: Colors.orange,
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) => Scaffold(
+                                      appBar: AppBar(
+                                        title: const Text('Планирую прочитать'),
+                                      ),
+                                      body: const WantToReadScreen(),
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: _buildStatCard(
+                                context: context,
+                                icon: Icons.schedule_outlined,
+                                value: wantToRead.toString(),
+                                label: 'В планах',
+                                color: Colors.orange,
+                              ),
                             ),
                           ),
                         ],

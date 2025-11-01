@@ -6,7 +6,7 @@ import 'package:prac5/features/books/bloc/books_event.dart';
 import 'package:prac5/features/theme/bloc/theme_bloc.dart';
 import 'package:prac5/features/theme/bloc/theme_event.dart';
 import 'package:prac5/features/theme/bloc/theme_state.dart';
-import 'package:prac5/features/navigation/main_navigation_shell.dart';
+import 'package:prac5/features/auth/initial_screen.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
             darkTheme: AppTheme.darkTheme,
             themeMode: themeMode,
             debugShowCheckedModeBanner: false,
-            home: const MainNavigationShell(),
+            home: const InitialScreen(),
           );
         },
       ),
