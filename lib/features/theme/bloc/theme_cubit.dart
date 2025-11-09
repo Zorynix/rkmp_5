@@ -1,20 +1,15 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
-import 'package:prac5/features/theme/bloc/theme_event.dart';
 import 'package:prac5/features/theme/bloc/theme_state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:prac5/services/logger_service.dart';
 
-class ThemeBloc extends Bloc<ThemeEvent, ThemeState> {
+class ThemeCubit extends Cubit<ThemeState> {
   static const String _themeKey = 'theme_mode';
 
-  ThemeBloc() : super(const ThemeInitial()) {
-    on<LoadTheme>(_onLoadTheme);
-    on<ToggleTheme>(_onToggleTheme);
-    on<SetThemeMode>(_onSetThemeMode);
-  }
+  ThemeCubit() : super(const ThemeInitial());
 
-  Future<void> _onLoadTheme(LoadTheme event, Emitter<ThemeState> emit) async {
+  Future<void> loadTheme() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final isDark = prefs.getBool(_themeKey) ?? false;
@@ -27,7 +22,7 @@ class ThemeBloc extends Bloc<ThemeEvent, ThemeState> {
     }
   }
 
-  Future<void> _onToggleTheme(ToggleTheme event, Emitter<ThemeState> emit) async {
+  Future<void> toggleTheme() async {
     try {
       if (state is ThemeLoaded) {
         final currentState = state as ThemeLoaded;
@@ -46,13 +41,13 @@ class ThemeBloc extends Bloc<ThemeEvent, ThemeState> {
     }
   }
 
-  Future<void> _onSetThemeMode(SetThemeMode event, Emitter<ThemeState> emit) async {
+  Future<void> setThemeMode(ThemeMode themeMode) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool(_themeKey, event.themeMode == ThemeMode.dark);
+      await prefs.setBool(_themeKey, themeMode == ThemeMode.dark);
 
-      emit(ThemeLoaded(event.themeMode));
-      LoggerService.info('Тема установлена: ${event.themeMode == ThemeMode.dark ? "темная" : "светлая"}');
+      emit(ThemeLoaded(themeMode));
+      LoggerService.info('Тема установлена: ${themeMode == ThemeMode.dark ? "темная" : "светлая"}');
     } catch (e) {
       LoggerService.error('Ошибка установки темы: $e');
     }

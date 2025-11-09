@@ -1,17 +1,19 @@
-class Book {
+import 'package:equatable/equatable.dart';
+
+class Book extends Equatable {
   final String id;
   final String title;
   final String author;
   final String genre;
   final String? description;
   final int? pages;
-  bool isRead;
-  int? rating;
+  final bool isRead;
+  final int? rating;
   final DateTime dateAdded;
-  DateTime? dateFinished;
+  final DateTime? dateFinished;
   final String? imageUrl;
 
-  Book({
+  const Book({
     required this.id,
     required this.title,
     required this.author,
@@ -20,10 +22,25 @@ class Book {
     this.pages,
     this.isRead = false,
     this.rating,
-    DateTime? dateAdded,
+    required this.dateAdded,
     this.dateFinished,
     this.imageUrl,
-  }) : dateAdded = dateAdded ?? DateTime.now();
+  });
+
+  @override
+  List<Object?> get props => [
+        id,
+        title,
+        author,
+        genre,
+        description,
+        pages,
+        isRead,
+        rating,
+        dateAdded,
+        dateFinished,
+        imageUrl,
+      ];
 
   Book copyWith({
     String? id,

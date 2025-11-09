@@ -8,6 +8,9 @@ import 'package:prac5/features/books/screens/want_to_read_screen.dart';
 import 'package:prac5/features/books/screens/all_books_screen.dart';
 import 'package:prac5/features/books/screens/book_detail_screen.dart';
 import 'package:prac5/features/books/screens/book_form_screen.dart';
+import 'package:prac5/features/books/screens/my_collection_screen.dart';
+import 'package:prac5/features/books/screens/ratings_screen.dart';
+import 'package:prac5/features/books/screens/statistics_screen.dart';
 import 'package:prac5/features/profile/profile_screen.dart';
 import 'package:prac5/features/books/models/book.dart';
 
@@ -73,6 +76,21 @@ class AppRouter {
           ),
           body: const AllBooksScreen(),
         ),
+      ),
+      GoRoute(
+        path: '/my-collection',
+        name: 'my-collection',
+        builder: (context, state) => const MyCollectionScreen(),
+      ),
+      GoRoute(
+        path: '/ratings',
+        name: 'ratings',
+        builder: (context, state) => const RatingsScreen(),
+      ),
+      GoRoute(
+        path: '/statistics',
+        name: 'statistics',
+        builder: (context, state) => const StatisticsScreen(),
       ),
       GoRoute(
         path: '/book/:id',

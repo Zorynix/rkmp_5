@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:prac5/services/auth_service.dart';
+import 'package:prac5/features/auth/bloc/auth_bloc.dart';
+import 'package:prac5/features/auth/bloc/auth_event.dart';
+import 'package:prac5/features/auth/bloc/auth_state.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -13,26 +16,8 @@ class _AuthScreenState extends State<AuthScreen> {
   final _formKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _authService = AuthService();
 
-  bool _isLogin = true;
-  bool _isLoading = false;
   bool _obscurePassword = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _checkAccount();
-  }
-
-  Future<void> _checkAccount() async {
-    final hasAccount = await _authService.hasAccount();
-    if (mounted) {
-      setState(() {
-        _isLogin = hasAccount;
-      });
-    }
-  }
 
   @override
   void dispose() {
@@ -41,45 +26,19 @@ class _AuthScreenState extends State<AuthScreen> {
     super.dispose();
   }
 
-  Future<void> _submit() async {
+  void _submit(BuildContext context, bool isLogin) {
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
-    setState(() => _isLoading = true);
-
     final username = _usernameController.text.trim();
     final password = _passwordController.text.trim();
 
-    bool success = false;
-    String message = '';
-
-    if (_isLogin) {
-      success = await _authService.login(username, password);
-      message = success ? 'Вход выполнен' : 'Неверный логин или пароль';
+    if (isLogin) {
+      context.read<AuthBloc>().add(LoginRequested(username, password));
     } else {
-      success = await _authService.register(username, password);
-      message = success ? 'Регистрация выполнена' : 'Ошибка регистрации';
+      context.read<AuthBloc>().add(RegisterRequested(username, password));
     }
-
-    setState(() => _isLoading = false);
-
-    if (mounted) {
-      if (success) {
-        context.go('/');
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(message)),
-        );
-      }
-    }
-  }
-
-  void _toggleMode() {
-    setState(() {
-      _isLogin = !_isLogin;
-      _formKey.currentState?.reset();
-    });
   }
 
   @override
@@ -87,152 +46,198 @@ class _AuthScreenState extends State<AuthScreen> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              colorScheme.primary,
-              colorScheme.secondary,
-            ],
+    return BlocListener<AuthBloc, AuthState>(
+      listener: (context, state) {
+        if (state is Authenticated) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Вход выполнен успешно'),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 1),
+            ),
+          );
+          context.go('/');
+        } else if (state is AuthFailure) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      },
+      child: Scaffold(
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                colorScheme.primary,
+                colorScheme.secondary,
+              ],
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: Card(
-                elevation: 8,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(32),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.menu_book,
-                          size: 80,
-                          color: colorScheme.primary,
-                        ),
-                        const SizedBox(height: 24),
-                        Text(
-                          _isLogin ? 'Вход' : 'Регистрация',
-                          style: theme.textTheme.headlineMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: colorScheme.primary,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          _isLogin
-                              ? 'Войдите в свой аккаунт'
-                              : 'Создайте новый аккаунт',
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                        const SizedBox(height: 32),
-                        TextFormField(
-                          controller: _usernameController,
-                          decoration: InputDecoration(
-                            labelText: 'Логин',
-                            prefixIcon: const Icon(Icons.person),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return 'Введите логин';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        TextFormField(
-                          controller: _passwordController,
-                          obscureText: _obscurePassword,
-                          decoration: InputDecoration(
-                            labelText: 'Пароль',
-                            prefixIcon: const Icon(Icons.lock),
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                _obscurePassword
-                                    ? Icons.visibility_off
-                                    : Icons.visibility,
+          child: SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: BlocBuilder<AuthBloc, AuthState>(
+                  builder: (context, state) {
+                    if (state is AuthChecking) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                    final isLogin = state is AuthLogin ||
+                                   (state is AuthLoading && state.isLogin) ||
+                                   (state is AuthFailure && state.isLogin);
+                    final isLoading = state is AuthLoading;
+
+                    return Card(
+                      elevation: 8,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(32),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.book_rounded,
+                                size: 80,
+                                color: colorScheme.primary,
                               ),
-                              onPressed: () {
-                                setState(() {
-                                  _obscurePassword = !_obscurePassword;
-                                });
-                              },
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return 'Введите пароль';
-                            }
-                            if (value.length < 4) {
-                              return 'Пароль должен быть не менее 4 символов';
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 24),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 50,
-                          child: ElevatedButton(
-                            onPressed: _isLoading ? null : _submit,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: colorScheme.primary,
-                              foregroundColor: colorScheme.onPrimary,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                              const SizedBox(height: 24),
+                              Text(
+                                isLogin ? 'Вход' : 'Регистрация',
+                                style: theme.textTheme.headlineMedium?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: colorScheme.primary,
+                                ),
                               ),
-                            ),
-                            child: _isLoading
-                                ? const SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                    ),
-                                  )
-                                : Text(
-                                    _isLogin ? 'Войти' : 'Зарегистрироваться',
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                              const SizedBox(height: 8),
+                              Text(
+                                isLogin
+                                    ? 'Войдите в свой аккаунт'
+                                    : 'Создайте новый аккаунт',
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: colorScheme.onSurface.withValues(alpha: 0.6),
+                                ),
+                              ),
+                              const SizedBox(height: 32),
+                              TextFormField(
+                                controller: _usernameController,
+                                decoration: InputDecoration(
+                                  labelText: 'Имя пользователя',
+                                  hintText: 'Введите имя пользователя',
+                                  prefixIcon: const Icon(Icons.person_outline),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(16),
                                   ),
+                                ),
+                                enabled: !isLoading,
+                                validator: (value) {
+                                  if (value == null || value.trim().isEmpty) {
+                                    return 'Введите имя пользователя';
+                                  }
+                                  if (value.trim().length < 3) {
+                                    return 'Минимум 3 символа';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: 16),
+                              TextFormField(
+                                controller: _passwordController,
+                                obscureText: _obscurePassword,
+                                decoration: InputDecoration(
+                                  labelText: 'Пароль',
+                                  hintText: 'Введите пароль',
+                                  prefixIcon: const Icon(Icons.lock_outline),
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      _obscurePassword
+                                          ? Icons.visibility_outlined
+                                          : Icons.visibility_off_outlined,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        _obscurePassword = !_obscurePassword;
+                                      });
+                                    },
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                ),
+                                enabled: !isLoading,
+                                validator: (value) {
+                                  if (value == null || value.trim().isEmpty) {
+                                    return 'Введите пароль';
+                                  }
+                                  if (value.trim().length < 4) {
+                                    return 'Минимум 4 символа';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: 24),
+                              SizedBox(
+                                width: double.infinity,
+                                height: 56,
+                                child: ElevatedButton(
+                                  onPressed: isLoading
+                                      ? null
+                                      : () => _submit(context, isLogin),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: colorScheme.primary,
+                                    foregroundColor: colorScheme.onPrimary,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    elevation: 2,
+                                  ),
+                                  child: isLoading
+                                      ? const SizedBox(
+                                          height: 24,
+                                          width: 24,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: Colors.white,
+                                          ),
+                                        )
+                                      : Text(
+                                          isLogin ? 'Войти' : 'Зарегистрироваться',
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              TextButton(
+                                onPressed: isLoading
+                                    ? null
+                                    : () {
+                                        context.read<AuthBloc>().add(const ToggleAuthMode());
+                                        _formKey.currentState?.reset();
+                                      },
+                                child: Text(
+                                  isLogin
+                                      ? 'Нет аккаунта? Зарегистрируйтесь'
+                                      : 'Уже есть аккаунт? Войдите',
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 16),
-                        TextButton(
-                          onPressed: _toggleMode,
-                          child: Text(
-                            _isLogin
-                                ? 'Нет аккаунта? Зарегистрируйтесь'
-                                : 'Уже есть аккаунт? Войдите',
-                            style: TextStyle(
-                              color: colorScheme.primary,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                      ),
+                    );
+                  },
                 ),
               ),
             ),

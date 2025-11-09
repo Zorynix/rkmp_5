@@ -1,5 +1,4 @@
 export 'models/book.dart';
-export 'state/books_container.dart';
 export 'bloc/books_bloc.dart';
 export 'bloc/books_event.dart';
 export 'bloc/books_state.dart';

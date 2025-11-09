@@ -68,6 +68,7 @@ class _BookFormScreenState extends State<BookFormScreen> {
         pages: _pagesController.text.trim().isEmpty
             ? null
             : int.tryParse(_pagesController.text.trim()),
+        dateAdded: DateTime.now(),
       );
       widget.onSave(book);
     }
