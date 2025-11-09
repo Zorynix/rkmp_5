@@ -41,10 +41,6 @@ class ReadBooksScreen extends StatelessWidget {
                   return BookTile(
                     key: ValueKey(book.id),
                     book: book,
-                    onDelete: () => context.read<BooksBloc>().add(DeleteBook(book.id)),
-                    onToggleRead: (isRead) => context.read<BooksBloc>().add(ToggleBookRead(book.id, isRead)),
-                    onRate: (rating) => context.read<BooksBloc>().add(RateBook(book.id, rating)),
-                    onUpdate: (book) => context.read<BooksBloc>().add(UpdateBook(book)),
                   );
                 },
               );

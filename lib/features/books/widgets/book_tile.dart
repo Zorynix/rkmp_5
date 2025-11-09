@@ -1,28 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:prac5/features/books/models/book.dart';
-import 'package:prac5/features/books/screens/book_detail_screen.dart';
+import 'package:prac5/features/books/bloc/books_bloc.dart';
+import 'package:prac5/features/books/bloc/books_event.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class BookTile extends StatelessWidget {
   final Book book;
-  final VoidCallback onDelete;
-  final Function(bool) onToggleRead;
-  final Function(int) onRate;
-  final Function(Book) onUpdate;
 
   const BookTile({
     super.key,
     required this.book,
-    required this.onDelete,
-    required this.onToggleRead,
-    required this.onRate,
-    required this.onUpdate,
   });
 
   void _showRatingDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Оценить книгу'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -46,8 +41,8 @@ class BookTile extends StatelessWidget {
                     size: 32,
                   ),
                   onPressed: () {
-                    onRate(rating);
-                    Navigator.pop(context);
+                    context.read<BooksBloc>().add(RateBook(book.id, rating));
+                    Navigator.pop(dialogContext);
                   },
                 );
               }),
@@ -56,7 +51,7 @@ class BookTile extends StatelessWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Отмена'),
           ),
         ],
@@ -67,18 +62,18 @@ class BookTile extends StatelessWidget {
   void _showDeleteConfirmation(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Удалить книгу?'),
         content: Text('Вы уверены, что хотите удалить "${book.title}"?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Отмена'),
           ),
           TextButton(
             onPressed: () {
-              Navigator.pop(context);
-              onDelete();
+              Navigator.pop(dialogContext);
+              context.read<BooksBloc>().add(DeleteBook(book.id));
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Удалить'),
@@ -89,18 +84,7 @@ class BookTile extends StatelessWidget {
   }
 
   void _navigateToDetail(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => BookDetailScreen(
-          book: book,
-          onDelete: onDelete,
-          onToggleRead: onToggleRead,
-          onRate: onRate,
-          onUpdate: onUpdate,
-        ),
-      ),
-    );
+    context.push('/book/${book.id}', extra: book);
   }
 
   @override
@@ -280,7 +264,7 @@ class BookTile extends StatelessWidget {
                       book.isRead ? Icons.undo : Icons.check_circle_outline,
                       color: book.isRead ? Colors.grey : Colors.green,
                     ),
-                    onPressed: () => onToggleRead(!book.isRead),
+                    onPressed: () => context.read<BooksBloc>().add(ToggleBookRead(book.id, !book.isRead)),
                     tooltip: book.isRead ? 'Вернуть' : 'Прочитано',
                   ),
                   IconButton(

@@ -16,5 +16,5 @@ void main() async {
     LoggerService.warning('Предзагрузка изображений не удалась (возможно, нет интернета): $e');
   });
 
-  runApp(const MyApp());
+  runApp(const BooksApp());
 }

@@ -1,23 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:prac5/features/books/models/book.dart';
-import 'package:prac5/features/books/screens/book_form_screen.dart';
+import 'package:prac5/features/books/bloc/books_bloc.dart';
+import 'package:prac5/features/books/bloc/books_event.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class BookDetailScreen extends StatefulWidget {
   final Book book;
-  final VoidCallback onDelete;
-  final Function(bool) onToggleRead;
-  final Function(int) onRate;
-  final Function(Book) onUpdate;
 
   const BookDetailScreen({
     super.key,
     required this.book,
-    required this.onDelete,
-    required this.onToggleRead,
-    required this.onRate,
-    required this.onUpdate,
   });
 
   @override
@@ -36,7 +31,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
   void _showRatingDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Оценить книгу'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -52,11 +47,11 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                     size: 36,
                   ),
                   onPressed: () {
-                    widget.onRate(rating);
+                    context.read<BooksBloc>().add(RateBook(_currentBook.id, rating));
                     setState(() {
                       _currentBook = _currentBook.copyWith(rating: rating);
                     });
-                    Navigator.pop(context);
+                    Navigator.pop(dialogContext);
                   },
                 );
               }),
@@ -65,7 +60,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Отмена'),
           ),
         ],
@@ -76,19 +71,19 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
   void _showDeleteConfirmation(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Удалить книгу?'),
         content: Text('Вы уверены, что хотите удалить "${_currentBook.title}"?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Отмена'),
           ),
           TextButton(
             onPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context);
-              widget.onDelete();
+              context.read<BooksBloc>().add(DeleteBook(_currentBook.id));
+              Navigator.pop(dialogContext);
+              context.pop();
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Удалить'),
@@ -99,26 +94,21 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
   }
 
   void _navigateToEditScreen(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => BookFormScreen(
-          book: _currentBook,
-          onSave: (updatedBook) {
-            widget.onUpdate(updatedBook);
-            setState(() {
-              _currentBook = updatedBook;
-            });
-            Navigator.pop(context);
-          },
-        ),
-      ),
-    );
+    context.push('/book-form', extra: {
+      'book': _currentBook,
+      'onSave': (updatedBook) {
+        context.read<BooksBloc>().add(UpdateBook(updatedBook));
+        setState(() {
+          _currentBook = updatedBook;
+        });
+        context.pop();
+      },
+    });
   }
 
   void _toggleReadStatus() {
     final newIsRead = !_currentBook.isRead;
-    widget.onToggleRead(newIsRead);
+    context.read<BooksBloc>().add(ToggleBookRead(_currentBook.id, newIsRead));
     setState(() {
       _currentBook = _currentBook.copyWith(
         isRead: newIsRead,

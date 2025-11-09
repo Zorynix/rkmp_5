@@ -43,7 +43,7 @@ class BooksLoaded extends BooksState {
 
     final sorted = books.toList()
       ..sort((a, b) => b.dateAdded.compareTo(a.dateAdded));
-    return sorted.take(5).toList();
+    return sorted.take(3).toList();
   }
 
   List<Book> get readBooksList => books.where((book) => book.isRead).toList();
@@ -59,4 +59,5 @@ class BooksError extends BooksState {
   @override
   List<Object?> get props => [message];
 }
+
 

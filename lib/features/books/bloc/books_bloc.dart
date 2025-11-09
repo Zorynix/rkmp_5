@@ -2,11 +2,16 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:prac5/features/books/bloc/books_event.dart';
 import 'package:prac5/features/books/bloc/books_state.dart';
 import 'package:prac5/features/books/models/book.dart';
+import 'package:prac5/features/books/data/repositories/books_repository.dart';
 import 'package:prac5/core/di/service_locator.dart';
 import 'package:prac5/services/logger_service.dart';
 
 class BooksBloc extends Bloc<BooksEvent, BooksState> {
-  BooksBloc() : super(const BooksInitial()) {
+  final BooksRepository _repository;
+
+  BooksBloc({required BooksRepository repository})
+      : _repository = repository,
+        super(const BooksInitial()) {
     on<LoadBooks>(_onLoadBooks);
     on<AddBook>(_onAddBook);
     on<UpdateBook>(_onUpdateBook);
@@ -18,7 +23,9 @@ class BooksBloc extends Bloc<BooksEvent, BooksState> {
   Future<void> _onLoadBooks(LoadBooks event, Emitter<BooksState> emit) async {
     try {
       emit(const BooksLoading());
-      emit(const BooksLoaded([]));
+      final books = await _repository.getBooks();
+      emit(BooksLoaded(books));
+      LoggerService.info('Книги загружены: ${books.length} шт.');
     } catch (e) {
       LoggerService.error('Ошибка загрузки книг: $e');
       emit(BooksError('Не удалось загрузить книги: $e'));
@@ -33,7 +40,10 @@ class BooksBloc extends Bloc<BooksEvent, BooksState> {
         final imageUrl = await Services.image.getNextBookImage();
         final bookWithImage = event.book.copyWith(imageUrl: imageUrl);
 
+        await _repository.addBook(bookWithImage);
+
         final updatedBooks = List<Book>.from(currentState.books)..add(bookWithImage);
+
         emit(BooksLoaded(updatedBooks));
 
         LoggerService.info('Книга добавлена: ${bookWithImage.title}');
@@ -48,6 +58,9 @@ class BooksBloc extends Bloc<BooksEvent, BooksState> {
     try {
       if (state is BooksLoaded) {
         final currentState = state as BooksLoaded;
+
+        await _repository.updateBook(event.book);
+
         final updatedBooks = currentState.books.map((book) {
           return book.id == event.book.id ? event.book : book;
         }).toList();
@@ -71,7 +84,10 @@ class BooksBloc extends Bloc<BooksEvent, BooksState> {
           await Services.image.releaseImage(bookToDelete.imageUrl!);
         }
 
+        await _repository.deleteBook(event.bookId);
+
         final updatedBooks = currentState.books.where((book) => book.id != event.bookId).toList();
+
         emit(BooksLoaded(updatedBooks));
 
         LoggerService.info('Книга удалена: ${bookToDelete.title}');
@@ -96,6 +112,9 @@ class BooksBloc extends Bloc<BooksEvent, BooksState> {
           return book;
         }).toList();
 
+        final updatedBook = updatedBooks.firstWhere((b) => b.id == event.bookId);
+        await _repository.updateBook(updatedBook);
+
         emit(BooksLoaded(updatedBooks));
         LoggerService.info('Статус чтения изменен для книги ID: ${event.bookId}');
       }
@@ -115,6 +134,9 @@ class BooksBloc extends Bloc<BooksEvent, BooksState> {
           }
           return book;
         }).toList();
+
+        final updatedBook = updatedBooks.firstWhere((b) => b.id == event.bookId);
+        await _repository.updateBook(updatedBook);
 
         emit(BooksLoaded(updatedBooks));
         LoggerService.info('Оценка книги изменена ID: ${event.bookId}, рейтинг: ${event.rating}');
