@@ -37,7 +37,24 @@ class HomeScreen extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      body: BlocBuilder<BooksBloc, BooksState>(
+      body: BlocConsumer<BooksBloc, BooksState>(
+        listener: (context, state) {
+          if (state is BooksError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: colorScheme.error,
+                behavior: SnackBarBehavior.floating,
+                action: SnackBarAction(
+                  label: 'OK',
+                  textColor: Colors.white,
+                  onPressed: () {},
+                ),
+              ),
+            );
+            context.read<BooksBloc>().add(const LoadBooks());
+          }
+        },
         builder: (context, state) {
           if (state is BooksLoading) {
             return const Center(child: CircularProgressIndicator());

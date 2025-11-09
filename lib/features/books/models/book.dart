@@ -5,10 +5,10 @@ class Book {
   final String genre;
   final String? description;
   final int? pages;
-  bool isRead;
-  int? rating;
+  final bool isRead;
+  final int? rating;
   final DateTime dateAdded;
-  DateTime? dateFinished;
+  final DateTime? dateFinished;
   final String? imageUrl;
 
   Book({

@@ -41,10 +41,6 @@ class BooksBloc extends Bloc<BooksEvent, BooksState> {
     } catch (e) {
       LoggerService.error('Ошибка добавления книги: $e');
       emit(BooksError('Не удалось добавить книгу: $e'));
-
-      if (state is BooksLoaded) {
-        emit(state as BooksLoaded);
-      }
     }
   }
 
@@ -62,10 +58,6 @@ class BooksBloc extends Bloc<BooksEvent, BooksState> {
     } catch (e) {
       LoggerService.error('Ошибка обновления книги: $e');
       emit(BooksError('Не удалось обновить книгу: $e'));
-
-      if (state is BooksLoaded) {
-        emit(state as BooksLoaded);
-      }
     }
   }
 
@@ -87,10 +79,6 @@ class BooksBloc extends Bloc<BooksEvent, BooksState> {
     } catch (e) {
       LoggerService.error('Ошибка удаления книги: $e');
       emit(BooksError('Не удалось удалить книгу: $e'));
-
-      if (state is BooksLoaded) {
-        emit(state as BooksLoaded);
-      }
     }
   }
 
@@ -114,10 +102,6 @@ class BooksBloc extends Bloc<BooksEvent, BooksState> {
     } catch (e) {
       LoggerService.error('Ошибка изменения статуса чтения: $e');
       emit(BooksError('Не удалось изменить статус: $e'));
-
-      if (state is BooksLoaded) {
-        emit(state as BooksLoaded);
-      }
     }
   }
 
@@ -138,10 +122,6 @@ class BooksBloc extends Bloc<BooksEvent, BooksState> {
     } catch (e) {
       LoggerService.error('Ошибка оценки книги: $e');
       emit(BooksError('Не удалось оценить книгу: $e'));
-
-      if (state is BooksLoaded) {
-        emit(state as BooksLoaded);
-      }
     }
   }
 }

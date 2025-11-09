@@ -3,8 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:prac5/services/profile_service.dart';
 import 'package:prac5/core/di/service_locator.dart';
-import 'package:prac5/features/theme/bloc/theme_bloc.dart';
-import 'package:prac5/features/theme/bloc/theme_event.dart';
+import 'package:prac5/features/theme/bloc/theme_cubit.dart';
 import 'package:prac5/features/theme/bloc/theme_state.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -227,7 +226,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 40),
 
             Card(
-              child: BlocBuilder<ThemeBloc, ThemeState>(
+              child: BlocBuilder<ThemeCubit, ThemeState>(
                 builder: (context, themeState) {
                   final isDark = themeState is ThemeLoaded && themeState.isDarkMode;
 
@@ -240,7 +239,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     trailing: Switch(
                       value: isDark,
                       onChanged: (value) {
-                        context.read<ThemeBloc>().add(const ToggleTheme());
+                        context.read<ThemeCubit>().toggleTheme();
                       },
                     ),
                   );
